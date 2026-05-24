@@ -5,6 +5,7 @@ const els = {
   saveStatus: document.querySelector('#saveStatus'),
   template: document.querySelector('#libraryTemplate'),
   primaryUrlButton: document.querySelector('#primaryUrlButton'),
+  qrImage: document.querySelector('#qrImage'),
   urlList: document.querySelector('#urlList')
 };
 
@@ -148,12 +149,17 @@ function renderAccess() {
   const primaryUrl = state.access?.primaryUrl || 'http://localhost:5178';
   els.primaryUrlButton.textContent = primaryUrl;
   els.primaryUrlButton.onclick = () => copyText(primaryUrl);
+  els.qrImage.src = `/api/qr?text=${encodeURIComponent(primaryUrl)}`;
   els.urlList.innerHTML = '';
   urls.forEach((url) => {
     const button = document.createElement('button');
     button.type = 'button';
     button.textContent = url;
-    button.addEventListener('click', () => copyText(url));
+    button.addEventListener('click', () => {
+      els.qrImage.src = `/api/qr?text=${encodeURIComponent(url)}`;
+      els.primaryUrlButton.textContent = url;
+      copyText(url);
+    });
     els.urlList.appendChild(button);
   });
 }

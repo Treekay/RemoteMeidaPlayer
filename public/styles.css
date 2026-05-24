@@ -787,23 +787,19 @@ video {
   text-align: center;
 }
 
-.qr-placeholder {
+.qr-frame {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
-  aspect-ratio: 1;
+  place-items: center;
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 18px;
+  padding: 16px;
   background: #f3f6fb;
 }
 
-.qr-placeholder span {
-  border-radius: 4px;
-  background:
-    linear-gradient(90deg, #0e1117 50%, transparent 0) 0 0 / 16px 16px,
-    linear-gradient(#0e1117 50%, transparent 0) 0 0 / 16px 16px,
-    #f3f6fb;
+.qr-frame img {
+  display: block;
+  width: min(100%, 280px);
+  aspect-ratio: 1;
 }
 
 .url-list {
