@@ -47,12 +47,25 @@ export function createSecurityService() {
       return token;
     },
 
+    createAdminToken() {
+      const token = crypto.randomBytes(32).toString('base64url');
+      tokens.set(token, { admin: true, expiresAt: Date.now() + SESSION_TTL_MS });
+      return token;
+    },
+
     tokenAllows(req, library, url) {
       if (!library.locked) return true;
       cleanupTokens(tokens);
       const token = readToken(req, url);
       const session = tokens.get(token);
       return Boolean(session && session.libraryId === library.id && session.expiresAt > Date.now());
+    },
+
+    tokenAllowsAdmin(req, url) {
+      cleanupTokens(tokens);
+      const token = readToken(req, url);
+      const session = tokens.get(token);
+      return Boolean(session?.admin && session.expiresAt > Date.now());
     },
 
     ttlSeconds: Math.floor(SESSION_TTL_MS / 1000)

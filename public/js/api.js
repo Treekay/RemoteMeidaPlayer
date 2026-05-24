@@ -1,4 +1,4 @@
-import { baseUrl, tokenFor } from './state.js';
+import { baseUrl, state, tokenFor } from './state.js';
 
 export function apiUrl(pathname) {
   return `${baseUrl()}${pathname}`;
@@ -7,6 +7,10 @@ export function apiUrl(pathname) {
 export function authHeaders(libraryId) {
   const token = tokenFor(libraryId);
   return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
+export function adminHeaders() {
+  return state.adminToken ? { Authorization: `Bearer ${state.adminToken}` } : {};
 }
 
 export async function fetchJson(pathname, options = {}) {

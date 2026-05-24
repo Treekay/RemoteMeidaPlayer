@@ -9,7 +9,9 @@ export const state = {
   activePath: '',
   queue: [],
   queueIndex: -1,
-  pendingUnlock: null
+  pendingUnlock: null,
+  adminToken: sessionStorage.getItem('rmp.adminToken') || '',
+  adminLibraries: []
 };
 
 export function baseUrl() {
@@ -28,4 +30,9 @@ export function tokenFor(libraryId) {
 export function setToken(libraryId, token) {
   state.tokens[libraryId] = token;
   sessionStorage.setItem('rmp.tokens', JSON.stringify(state.tokens));
+}
+
+export function setAdminToken(token) {
+  state.adminToken = token;
+  sessionStorage.setItem('rmp.adminToken', token);
 }

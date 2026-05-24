@@ -1,6 +1,7 @@
 export const els = {
   serverLabel: document.querySelector('#serverLabel'),
   settingsButton: document.querySelector('#settingsButton'),
+  adminButton: document.querySelector('#adminButton'),
   connectPanel: document.querySelector('#connectPanel'),
   serverInput: document.querySelector('#serverInput'),
   connectButton: document.querySelector('#connectButton'),
@@ -32,5 +33,17 @@ export const els = {
   passwordTitle: document.querySelector('#passwordTitle'),
   passwordHint: document.querySelector('#passwordHint'),
   passwordInput: document.querySelector('#passwordInput'),
-  unlockButton: document.querySelector('#unlockButton')
+  unlockButton: document.querySelector('#unlockButton'),
+  adminDialog: document.querySelector('#adminDialog'),
+  adminClose: document.querySelector('#adminClose'),
+  adminLogin: document.querySelector('#adminLogin'),
+  adminPasswordInput: document.querySelector('#adminPasswordInput'),
+  adminUnlockButton: document.querySelector('#adminUnlockButton'),
+  adminLoginHint: document.querySelector('#adminLoginHint'),
+  adminEditor: document.querySelector('#adminEditor'),
+  adminPublicUrl: document.querySelector('#adminPublicUrl'),
+  adminLibraryList: document.querySelector('#adminLibraryList'),
+  adminAddLibrary: document.querySelector('#adminAddLibrary'),
+  adminSave: document.querySelector('#adminSave'),
+  adminSaveHint: document.querySelector('#adminSaveHint')
 };

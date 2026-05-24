@@ -1,14 +1,17 @@
 import { getAccessInfo } from './access.js';
+import { writeFile } from 'node:fs/promises';
 import { audioExts, documentExts, imageExts, textExts, videoExts } from './media-types.js';
 import { listLibraryFolder, publicLibrary } from './libraries.js';
 import { readJsonBody, sendJson } from './http.js';
 import { verifyPassword } from './security.js';
+import { applyAppConfig } from './config.js';
 
 export function getHealth(config) {
   return {
     ok: true,
     libraries: config.libraries.map(publicLibrary),
     access: getAccessInfo(config),
+    adminEnabled: config.adminLocked,
     supported: supportedMedia()
   };
 }
@@ -16,8 +19,66 @@ export function getHealth(config) {
 export function getLibraries(config) {
   return {
     libraries: config.libraries.map(publicLibrary),
+    adminEnabled: config.adminLocked,
     supported: supportedMedia()
   };
+}
+
+export function getAdminStatus(config) {
+  return { enabled: config.adminLocked };
+}
+
+export async function unlockAdmin(req, res, config, security) {
+  try {
+    if (!config.adminLocked) return sendJson(res, 403, { error: '管理员密码未启用 / Admin password is not enabled' });
+    const body = await readJsonBody(req);
+    const password = security.decryptPassword(body.encryptedPassword, body.keyId);
+    if (password !== config.adminPassword) {
+      return sendJson(res, 401, { error: '管理员密码不正确 / Incorrect admin password' });
+    }
+    return sendJson(res, 200, {
+      token: security.createAdminToken(),
+      expiresIn: security.ttlSeconds
+    });
+  } catch (error) {
+    return sendJson(res, error.status || 400, { error: error.message || '无法验证管理员密码 / Cannot verify admin password' });
+  }
+}
+
+export function getAdminConfig(req, res, url, config, security) {
+  if (!security.tokenAllowsAdmin(req, url)) return sendJson(res, 401, { error: '需要管理员权限 / Admin access required' });
+  return sendJson(res, 200, {
+    publicUrl: config.publicUrl,
+    libraries: config.libraries.map((library) => ({
+      id: library.id,
+      name: library.name,
+      path: library.path,
+      locked: library.locked,
+      passwordSet: library.locked
+    }))
+  });
+}
+
+export async function saveAdminConfig(req, res, url, config, security) {
+  if (!security.tokenAllowsAdmin(req, url)) return sendJson(res, 401, { error: '需要管理员权限 / Admin access required' });
+  try {
+    const body = await readJsonBody(req, 512 * 1024);
+    const previous = new Map(config.libraries.map((library) => [library.id, library]));
+    const libraries = normalizeAdminLibraries(body.libraries || [], previous);
+    if (!libraries.length) return sendJson(res, 400, { error: '至少保留一个文件夹 / Keep at least one folder' });
+
+    const appConfig = {
+      publicUrl: String(body.publicUrl || '').trim(),
+      adminPassword: config.adminPassword,
+      closeToTray: config.closeToTray !== false,
+      libraries
+    };
+    await writeFile(config.configPath, JSON.stringify(appConfig, null, 2) + '\n', 'utf8');
+    applyAppConfig(config, appConfig);
+    return sendJson(res, 200, { ok: true, libraries: config.libraries.map(publicLibrary) });
+  } catch (error) {
+    return sendJson(res, error.status || 400, { error: error.message || '保存失败 / Save failed' });
+  }
 }
 
 export async function unlockLibrary(req, res, config, security) {
@@ -64,4 +125,22 @@ function supportedMedia() {
     text: [...textExts],
     document: [...documentExts]
   };
+}
+
+function normalizeAdminLibraries(rawLibraries, previous) {
+  return rawLibraries
+    .map((entry, index) => {
+      const id = String(entry.id || `library-${index + 1}`).trim() || `library-${index + 1}`;
+      const old = previous.get(id);
+      const locked = Boolean(entry.locked);
+      const password = String(entry.password || '');
+      return {
+        id,
+        name: String(entry.name || `Library ${index + 1}`).trim(),
+        path: String(entry.path || '').trim(),
+        password: locked ? password || old?.password || '' : '',
+        passwordHash: locked && !password ? old?.passwordHash || '' : ''
+      };
+    })
+    .filter((library) => library.path);
 }

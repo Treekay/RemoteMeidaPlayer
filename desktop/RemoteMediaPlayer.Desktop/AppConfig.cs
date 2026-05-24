@@ -14,6 +14,9 @@ internal sealed class AppConfig
     [JsonPropertyName("closeToTray")]
     public bool CloseToTray { get; set; } = true;
 
+    [JsonPropertyName("adminPassword")]
+    public string AdminPassword { get; set; } = "";
+
     public static AppConfig Load(string path)
     {
         if (!File.Exists(path)) return Default();

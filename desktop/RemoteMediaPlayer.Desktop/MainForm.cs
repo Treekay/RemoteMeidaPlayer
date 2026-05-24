@@ -8,6 +8,7 @@ internal sealed class MainForm : Form
     private const int StackedLayoutBreakpoint = 1380;
     private readonly FlowLayoutPanel _libraryList = new();
     private readonly TextBox _publicUrl = new();
+    private readonly TextBox _adminPassword = new();
     private readonly Label _status = new();
     private readonly Label _accessUrl = new();
     private readonly ComboBox _accessChoices = new();
@@ -107,8 +108,9 @@ internal sealed class MainForm : Form
         var panel = CardPanel();
         panel.Margin = new Padding(0, 0, 16, 0);
 
-        var layout = new TableLayoutPanel { Dock = DockStyle.Fill, RowCount = 5, BackColor = Theme.Surface };
+        var layout = new TableLayoutPanel { Dock = DockStyle.Fill, RowCount = 6, BackColor = Theme.Surface };
         layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+        layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 58));
         layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 58));
         layout.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
         layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 96));
@@ -130,6 +132,10 @@ internal sealed class MainForm : Form
         publicRow.Controls.Add(applyUrl, 1, 0);
         layout.Controls.Add(publicRow, 0, 1);
 
+        StyleTextBox(_adminPassword, "管理员密码（手机端管理需要）/ Admin password for phone management");
+        _adminPassword.UseSystemPasswordChar = true;
+        layout.Controls.Add(_adminPassword, 0, 2);
+
         _libraryList.Dock = DockStyle.Fill;
         _libraryList.FlowDirection = FlowDirection.TopDown;
         _libraryList.WrapContents = false;
@@ -138,7 +144,7 @@ internal sealed class MainForm : Form
         _libraryList.HorizontalScroll.Visible = false;
         _libraryList.BackColor = Theme.Surface;
         _libraryList.Resize += (_, _) => ResizeLibraryEditors();
-        layout.Controls.Add(_libraryList, 0, 2);
+        layout.Controls.Add(_libraryList, 0, 3);
 
         var actions = new FlowLayoutPanel
         {
@@ -158,12 +164,12 @@ internal sealed class MainForm : Form
         actions.Controls.Add(add);
         actions.Controls.Add(save);
         actions.Controls.Add(_serverButton);
-        layout.Controls.Add(actions, 0, 3);
+        layout.Controls.Add(actions, 0, 4);
 
         _status.ForeColor = Theme.Muted;
         _status.AutoEllipsis = true;
         _status.Dock = DockStyle.Fill;
-        layout.Controls.Add(_status, 0, 4);
+        layout.Controls.Add(_status, 0, 5);
 
         panel.Controls.Add(layout);
         return panel;
@@ -251,6 +257,7 @@ internal sealed class MainForm : Form
     {
         _config = AppConfig.Load(ProjectPaths.ConfigPath);
         _publicUrl.Text = _config.PublicUrl;
+        _adminPassword.Text = _config.AdminPassword;
         _runInBackground.Checked = _config.CloseToTray;
         _libraryList.Controls.Clear();
         foreach (var library in _config.Libraries)
@@ -265,6 +272,7 @@ internal sealed class MainForm : Form
     {
         _config.PublicUrl = AccessAddress.Normalize(_publicUrl.Text);
         _config.CloseToTray = _runInBackground.Checked;
+        _config.AdminPassword = _adminPassword.Text;
         _config.Libraries = ReadLibraries();
         if (_config.Libraries.Count == 0)
         {

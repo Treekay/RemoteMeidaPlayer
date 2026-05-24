@@ -20,6 +20,10 @@ Windows 也可以直接双击 `run-desktop.cmd`。
 
 The desktop app only runs locally. It is not exposed as a web setup page, so phones and other users cannot modify server settings from the browser.
 
+If you set an admin password in the desktop app, the phone UI shows an Admin entry. After unlocking with the admin password, you can edit shared folders from the phone. The admin password is encrypted in the browser before it is sent.
+
+如果在电脑端设置了管理员密码，手机端会显示管理入口。输入管理员密码解锁后，可以在手机端编辑共享文件夹。管理员密码会在浏览器中加密后再发送。
+
 电脑端配置器只在本机运行，不通过网页暴露配置入口，因此手机或其他用户不能在浏览器里修改服务端设置。
 
 ## Desktop Workflow / 电脑端流程

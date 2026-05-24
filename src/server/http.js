@@ -21,12 +21,12 @@ export function sendText(res, status, body) {
   res.end(body);
 }
 
-export async function readJsonBody(req) {
+export async function readJsonBody(req, maxSize = 32 * 1024) {
   const chunks = [];
   let size = 0;
   for await (const chunk of req) {
     size += chunk.length;
-    if (size > 32 * 1024) throw new Error('Request body is too large');
+    if (size > maxSize) throw new Error('Request body is too large');
     chunks.push(chunk);
   }
   if (!chunks.length) return {};

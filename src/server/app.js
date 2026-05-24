@@ -1,6 +1,6 @@
 import http from 'node:http';
 import { sendCorsPreflight, sendJson, sendText } from './http.js';
-import { getHealth, getLibraries, listFolder, unlockLibrary } from './routes.js';
+import { getAdminConfig, getAdminStatus, getHealth, getLibraries, listFolder, saveAdminConfig, unlockAdmin, unlockLibrary } from './routes.js';
 import { serveStatic } from './static-files.js';
 import { streamMedia } from './media-stream.js';
 import { sendQrSvg } from './qr.js';
@@ -26,6 +26,18 @@ export function createServer(config, security) {
     }
     if (req.method === 'POST' && url.pathname === '/api/unlock') {
       return unlockLibrary(req, res, config, security);
+    }
+    if (req.method === 'GET' && url.pathname === '/api/admin/status') {
+      return sendJson(res, 200, getAdminStatus(config));
+    }
+    if (req.method === 'POST' && url.pathname === '/api/admin/unlock') {
+      return unlockAdmin(req, res, config, security);
+    }
+    if (req.method === 'GET' && url.pathname === '/api/admin/config') {
+      return getAdminConfig(req, res, url, config, security);
+    }
+    if (req.method === 'POST' && url.pathname === '/api/admin/config') {
+      return saveAdminConfig(req, res, url, config, security);
     }
     if (req.method === 'GET' && url.pathname === '/api/list') {
       return listFolder(req, res, url, config, security);

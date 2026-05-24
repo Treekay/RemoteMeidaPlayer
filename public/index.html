@@ -23,6 +23,9 @@
         <button class="icon-button" id="settingsButton" type="button" aria-label="服务器设置 / Server settings" title="服务器设置 / Server settings">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06A1.7 1.7 0 0 0 15 19.4a1.7 1.7 0 0 0-1 .6 1.7 1.7 0 0 0-.4 1.1V21a2 2 0 1 1-4 0v-.09A1.7 1.7 0 0 0 8.6 19.4a1.7 1.7 0 0 0-1.88.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-.6-1 1.7 1.7 0 0 0-1.1-.4H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.6 8.6a1.7 1.7 0 0 0-.34-1.88l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-.6 1.7 1.7 0 0 0 .4-1.1V3a2 2 0 1 1 4 0v.09A1.7 1.7 0 0 0 15.4 4.6a1.7 1.7 0 0 0 1.88-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.4 9c.16.38.46.7.85.9.24.13.5.2.78.2H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.51.9Z"/></svg>
         </button>
+        <button class="icon-button" id="adminButton" type="button" hidden aria-label="管理 / Admin" title="管理 / Admin">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 21v-7a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4v7"/><path d="M12 10a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z"/><path d="M9 17h6"/></svg>
+        </button>
       </header>
 
       <section class="mobile-hero">
@@ -120,6 +123,36 @@
         <input id="passwordInput" type="password" autocomplete="current-password" />
         <button class="primary-button" id="unlockButton" type="submit" value="default">解锁 / Unlock</button>
       </form>
+    </dialog>
+
+    <dialog class="admin-dialog" id="adminDialog">
+      <div class="admin-shell">
+        <header class="preview-head">
+          <div>
+            <span>管理 / Admin</span>
+            <h2>电脑端设置 / Desktop Setup</h2>
+          </div>
+          <button class="icon-button small" id="adminClose" type="button" aria-label="关闭 / Close" title="关闭 / Close">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+          </button>
+        </header>
+        <section class="admin-login" id="adminLogin">
+          <label for="adminPasswordInput">管理员密码 / Admin password</label>
+          <input id="adminPasswordInput" type="password" autocomplete="current-password" />
+          <button class="primary-button" id="adminUnlockButton" type="button">进入管理 / Unlock admin</button>
+          <p id="adminLoginHint">密码会在浏览器中加密后发送。/ The password is encrypted before sending.</p>
+        </section>
+        <section class="admin-editor" id="adminEditor" hidden>
+          <label for="adminPublicUrl">公网访问地址 / Public URL</label>
+          <input id="adminPublicUrl" inputmode="url" placeholder="https://media.example.com" />
+          <div class="admin-list" id="adminLibraryList"></div>
+          <div class="admin-actions">
+            <button class="ghost-button" id="adminAddLibrary" type="button">添加文件夹 / Add</button>
+            <button class="primary-button compact" id="adminSave" type="button">保存 / Save</button>
+          </div>
+          <p id="adminSaveHint"></p>
+        </section>
+      </div>
     </dialog>
 
     <script src="/js/app.js" type="module"></script>

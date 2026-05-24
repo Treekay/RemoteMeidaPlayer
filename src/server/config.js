@@ -24,11 +24,24 @@ export async function loadServerConfig() {
     host,
     mediaRoot,
     publicUrl: normalizePublicUrl(appConfig.publicUrl),
+    adminPassword: String(appConfig.adminPassword || ''),
+    adminLocked: Boolean(appConfig.adminPassword),
+    closeToTray: appConfig.closeToTray !== false,
     configPath,
     publicDir: path.join(projectRoot, 'public'),
     libraries,
     libraryMap: new Map(libraries.map((library) => [library.id, library]))
   };
+}
+
+export function applyAppConfig(config, appConfig) {
+  const libraries = loadLibraries(appConfig, config.mediaRoot);
+  config.publicUrl = normalizePublicUrl(appConfig.publicUrl);
+  config.adminPassword = String(appConfig.adminPassword || '');
+  config.adminLocked = Boolean(config.adminPassword);
+  config.closeToTray = appConfig.closeToTray !== false;
+  config.libraries = libraries;
+  config.libraryMap = new Map(libraries.map((library) => [library.id, library]));
 }
 
 async function loadAppConfig(configPath, failOnMissingConfig) {
