@@ -5,6 +5,7 @@ namespace RemoteMediaPlayer.Desktop;
 internal sealed class MainForm : Form
 {
     private const int Port = 5178;
+    private const int StackedLayoutBreakpoint = 1180;
     private readonly FlowLayoutPanel _libraryList = new();
     private readonly TextBox _publicUrl = new();
     private readonly Label _status = new();
@@ -341,7 +342,7 @@ internal sealed class MainForm : Form
     private void ApplyResponsiveLayout()
     {
         if (_shell is null || _configPanel is null || _accessPanel is null) return;
-        var shouldStack = ClientSize.Width < 1040;
+        var shouldStack = ClientSize.Width < StackedLayoutBreakpoint;
         if (shouldStack == _stackedLayout && _shell.Controls.Count > 0) return;
         _stackedLayout = shouldStack;
         _shell.SuspendLayout();
