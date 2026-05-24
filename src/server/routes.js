@@ -1,5 +1,5 @@
 import { getAccessInfo } from './access.js';
-import { audioExts, videoExts } from './media-types.js';
+import { audioExts, documentExts, imageExts, textExts, videoExts } from './media-types.js';
 import { listLibraryFolder, publicLibrary } from './libraries.js';
 import { readJsonBody, sendJson } from './http.js';
 import { verifyPassword } from './security.js';
@@ -57,5 +57,11 @@ export async function listFolder(req, res, url, config, security) {
 }
 
 function supportedMedia() {
-  return { audio: [...audioExts], video: [...videoExts] };
+  return {
+    audio: [...audioExts],
+    video: [...videoExts],
+    image: [...imageExts],
+    text: [...textExts],
+    document: [...documentExts]
+  };
 }

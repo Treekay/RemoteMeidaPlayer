@@ -22,7 +22,7 @@ internal sealed class MainForm : Form
     public MainForm()
     {
         Text = "Remote Media";
-        MinimumSize = new Size(1200, 780);
+        MinimumSize = new Size(760, 620);
         BackColor = Theme.Background;
         ForeColor = Theme.Text;
         Font = new Font("Microsoft YaHei UI", 9F);

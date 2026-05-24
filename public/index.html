@@ -86,6 +86,24 @@
       <div class="playlist" id="playlist" hidden></div>
     </aside>
 
+    <dialog class="preview-dialog" id="previewDialog">
+      <div class="preview-shell">
+        <header class="preview-head">
+          <div>
+            <span id="previewKind">预览 / Preview</span>
+            <h2 id="previewTitle">文件 / File</h2>
+          </div>
+          <div class="preview-actions">
+            <a id="previewOpen" target="_blank" rel="noopener">打开 / Open</a>
+            <button class="icon-button small" id="previewClose" type="button" aria-label="关闭 / Close" title="关闭 / Close">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+            </button>
+          </div>
+        </header>
+        <div class="preview-body" id="previewBody"></div>
+      </div>
+    </dialog>
+
     <dialog class="password-dialog" id="passwordDialog">
       <form method="dialog" id="passwordForm">
         <div class="dialog-head">

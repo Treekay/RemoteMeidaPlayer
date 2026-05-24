@@ -12,7 +12,14 @@ export function formatBytes(bytes) {
 
 export function kindText(item) {
   if (item.type === 'folder') return '文件夹 / Folder';
-  return item.kind === 'video' ? '视频 / Video' : '音频 / Audio';
+  const labels = {
+    audio: '音频 / Audio',
+    video: '视频 / Video',
+    image: '图片 / Image',
+    text: '文本 / Text',
+    document: '文档 / Document'
+  };
+  return labels[item.kind] || '文件 / File';
 }
 
 export function escapeHtml(value) {

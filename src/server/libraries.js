@@ -1,22 +1,12 @@
 import path from 'node:path';
 import { readdir, stat } from 'node:fs/promises';
-import { encodeMediaPath, mediaKind, toPosixPath } from './media-types.js';
+import { encodeMediaPath, fileKind, toPosixPath } from './media-types.js';
 
 export function publicLibrary(library) {
   return {
     id: library.id,
     name: library.name,
     locked: library.locked
-  };
-}
-
-export function privateLibrary(library) {
-  return {
-    id: library.id,
-    name: library.name,
-    path: library.path,
-    locked: library.locked,
-    hasPassword: library.locked
   };
 }
 
@@ -32,14 +22,14 @@ export function safeResolve(library, relativePath = '') {
 export async function listLibraryFolder(library, requested = '') {
   const resolved = safeResolve(library, requested);
   if (!resolved) {
-    const error = new Error('无效路径');
+    const error = new Error('无效路径 / Invalid path');
     error.status = 400;
     throw error;
   }
 
   const rootStat = await stat(resolved);
   if (!rootStat.isDirectory()) {
-    const error = new Error('路径不是文件夹');
+    const error = new Error('路径不是文件夹 / Path is not a folder');
     error.status = 400;
     throw error;
   }
@@ -57,7 +47,7 @@ export async function listLibraryFolder(library, requested = '') {
     }
 
     if (!entry.isFile()) continue;
-    const kind = mediaKind(entry.name);
+    const kind = fileKind(entry.name);
     if (!kind) continue;
     const info = await stat(fullPath);
     items.push({

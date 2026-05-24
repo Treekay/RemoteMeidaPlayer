@@ -1,7 +1,7 @@
 import { fetchJson, authHeaders } from './api.js';
 import { canEncryptInBrowser, encryptPassword } from './crypto.js';
 import { els } from './dom.js';
-import { playFromFolder, playNext, playQueueIndex } from './player.js';
+import { openFileFromFolder, playNext, playQueueIndex } from './player.js';
 import {
   displayServer,
   renderBrowser,
@@ -73,7 +73,7 @@ async function loadFolder(nextPath = state.path) {
 }
 
 function playSelectedItem(item) {
-  playFromFolder(item, renderCurrentBrowser, renderCurrentPlaylist);
+  openFileFromFolder(item, renderCurrentBrowser, renderCurrentPlaylist);
 }
 
 function playSelectedIndex(index) {
@@ -149,6 +149,10 @@ function bindEvents() {
   els.refreshButton.addEventListener('click', () => loadFolder(state.path));
   els.playlistButton.addEventListener('click', () => {
     els.playlist.hidden = !els.playlist.hidden;
+  });
+  els.previewClose.addEventListener('click', () => {
+    els.previewDialog.close();
+    els.previewBody.innerHTML = '';
   });
   els.audio.addEventListener('ended', () => playNext(renderCurrentBrowser, renderCurrentPlaylist));
   els.video.addEventListener('ended', () => playNext(renderCurrentBrowser, renderCurrentPlaylist));

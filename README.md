@@ -126,6 +126,7 @@ This prevents the password from appearing as plaintext in the request body. If e
 - Optional per-library password.
 - Folder browsing.
 - Built-in audio/video playback.
+- Image, text, Markdown, PDF, and common Office document browsing.
 - Current-folder playlist with auto-next playback.
 - HTTP Range support for seeking and large files.
 - Mobile layout and PWA support.
@@ -137,6 +138,7 @@ This prevents the password from appearing as plaintext in the request body. If e
 - 支持按媒体库设置访问密码。
 - 支持文件夹浏览。
 - 支持应用内音频/视频播放。
+- 支持图片、文本、Markdown、PDF 和常见 Office 文档浏览。
 - 根据当前文件夹生成播放列表，并自动播放下一项。
 - 支持 HTTP Range，便于拖动进度条和播放大文件。
 - 支持移动端布局和 PWA 安装。
@@ -146,6 +148,10 @@ This prevents the password from appearing as plaintext in the request body. If e
 Audio / 音频：`mp3`、`m4a`、`aac`、`flac`、`wav`、`ogg`、`opus`、`webm`
 
 Video / 视频：`mp4`、`m4v`、`mov`、`webm`、`mkv`、`avi`
+
+Images / 图片：`jpg`、`jpeg`、`png`、`gif`、`webp`、`bmp`、`svg`、`avif`
+
+Documents and text / 文档和文本：`pdf`、`doc`、`docx`、`xls`、`xlsx`、`ppt`、`pptx`、`rtf`、`md`、`txt`、`csv`、`json`、`xml`、`yaml`、`log`
 
 Actual playback support depends on the phone browser and codecs. `mp4`, `mp3`, and `m4a` usually work best.
 
