@@ -12,6 +12,10 @@ internal sealed class MainForm : Form
     private readonly ComboBox _accessChoices = new();
     private readonly PictureBox _qrImage = new();
     private readonly RoundedButton _serverButton = new();
+    private TableLayoutPanel? _shell;
+    private Control? _configPanel;
+    private Control? _accessPanel;
+    private bool _stackedLayout;
     private readonly ServerProcess _server = new();
     private AppConfig _config = AppConfig.Default();
 
@@ -24,6 +28,7 @@ internal sealed class MainForm : Form
         Font = new Font("Microsoft YaHei UI", 9F);
         BuildUi();
         LoadConfig();
+        Resize += (_, _) => ApplyResponsiveLayout();
     }
 
     protected override void OnFormClosing(FormClosingEventArgs e)
@@ -35,18 +40,17 @@ internal sealed class MainForm : Form
 
     private void BuildUi()
     {
-        var shell = new TableLayoutPanel
+        _shell = new TableLayoutPanel
         {
             Dock = DockStyle.Fill,
             Padding = new Padding(18),
             ColumnCount = 2,
             BackColor = Theme.Background
         };
-        shell.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 65));
-        shell.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 35));
-        shell.Controls.Add(BuildConfigPanel(), 0, 0);
-        shell.Controls.Add(BuildAccessPanel(), 1, 0);
-        Controls.Add(shell);
+        _configPanel = BuildConfigPanel();
+        _accessPanel = BuildAccessPanel();
+        Controls.Add(_shell);
+        ApplyResponsiveLayout();
     }
 
     private Control BuildConfigPanel()
@@ -156,13 +160,23 @@ internal sealed class MainForm : Form
         _accessUrl.AutoEllipsis = true;
         layout.Controls.Add(_accessUrl, 0, 4);
 
+        var accessActions = new FlowLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            FlowDirection = FlowDirection.LeftToRight,
+            BackColor = Theme.Surface
+        };
         var copy = SecondaryButton("复制访问地址 / Copy URL", 200);
         copy.Click += (_, _) =>
         {
             if (!string.IsNullOrWhiteSpace(_accessUrl.Text)) Clipboard.SetText(_accessUrl.Text);
             _status.Text = "访问地址已复制 / URL copied.";
         };
-        layout.Controls.Add(copy, 0, 5);
+        var testLocal = SecondaryButton("测试本机服务 / Test Local", 190);
+        testLocal.Click += async (_, _) => await TestLocalServiceAsync();
+        accessActions.Controls.Add(copy);
+        accessActions.Controls.Add(testLocal);
+        layout.Controls.Add(accessActions, 0, 5);
 
         var hint = new Label
         {
@@ -205,7 +219,7 @@ internal sealed class MainForm : Form
         _status.Text = "设置已保存。服务运行中时请重启服务让改动生效 / Saved. Restart the service to apply changes.";
     }
 
-    private void ToggleServer()
+    private async void ToggleServer()
     {
         if (_server.IsRunning)
         {
@@ -215,11 +229,33 @@ internal sealed class MainForm : Form
             return;
         }
 
-        SaveConfig();
-        _server.Start(Port);
-        _serverButton.Text = "停止服务 / Stop";
-        _status.Text = "服务已启动。手机扫码即可访问 / Service started. Scan the QR code on your phone.";
-        RefreshAccessChoices();
+        try
+        {
+            SaveConfig();
+            _serverButton.Enabled = false;
+            _status.Text = "正在启动服务... / Starting service...";
+            _server.Start(Port);
+            var healthy = await _server.WaitUntilHealthyAsync(Port, TimeSpan.FromSeconds(8));
+            if (!healthy)
+            {
+                _server.Stop();
+                StylePrimaryButton(_serverButton, "启动服务 / Start", 150);
+                _status.Text = $"服务启动失败 / Service failed to start: {_server.LastLog}".Trim();
+                return;
+            }
+
+            _serverButton.Text = "停止服务 / Stop";
+            _status.Text = "服务已启动。手机扫码即可访问 / Service started. Scan the QR code on your phone.";
+            RefreshAccessChoices();
+        }
+        catch (Exception error)
+        {
+            _status.Text = $"服务启动失败 / Service failed to start: {error.Message}";
+        }
+        finally
+        {
+            _serverButton.Enabled = true;
+        }
     }
 
     private void AddLibrary(MediaLibrary library)
@@ -280,6 +316,62 @@ internal sealed class MainForm : Form
     {
         _accessUrl.Text = url;
         RenderQr(url);
+    }
+
+    private async Task TestLocalServiceAsync()
+    {
+        try
+        {
+            using var client = new HttpClient { Timeout = TimeSpan.FromSeconds(2) };
+            var response = await client.GetAsync($"http://127.0.0.1:{Port}/api/health");
+            _status.Text = response.IsSuccessStatusCode
+                ? "本机服务可访问 / Local service is reachable."
+                : $"本机服务响应异常 / Local service returned {(int)response.StatusCode}.";
+        }
+        catch (Exception error)
+        {
+            _status.Text = $"本机服务不可访问 / Local service is not reachable: {error.Message}";
+        }
+    }
+
+    private void ApplyResponsiveLayout()
+    {
+        if (_shell is null || _configPanel is null || _accessPanel is null) return;
+        var shouldStack = ClientSize.Width < 1040;
+        if (shouldStack == _stackedLayout && _shell.Controls.Count > 0) return;
+        _stackedLayout = shouldStack;
+        _shell.SuspendLayout();
+        _shell.Controls.Clear();
+        _shell.ColumnStyles.Clear();
+        _shell.RowStyles.Clear();
+
+        if (shouldStack)
+        {
+            _shell.ColumnCount = 1;
+            _shell.RowCount = 2;
+            _shell.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+            _shell.RowStyles.Add(new RowStyle(SizeType.Percent, 58));
+            _shell.RowStyles.Add(new RowStyle(SizeType.Percent, 42));
+            _configPanel.Margin = new Padding(0, 0, 0, 16);
+            _accessPanel.Margin = new Padding(0);
+            _shell.Controls.Add(_configPanel, 0, 0);
+            _shell.Controls.Add(_accessPanel, 0, 1);
+        }
+        else
+        {
+            _shell.ColumnCount = 2;
+            _shell.RowCount = 1;
+            _shell.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 65));
+            _shell.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 35));
+            _shell.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+            _configPanel.Margin = new Padding(0, 0, 16, 0);
+            _accessPanel.Margin = new Padding(0);
+            _shell.Controls.Add(_configPanel, 0, 0);
+            _shell.Controls.Add(_accessPanel, 1, 0);
+        }
+
+        _shell.ResumeLayout();
+        ResizeLibraryEditors();
     }
 
     private void RenderQr(string text)
