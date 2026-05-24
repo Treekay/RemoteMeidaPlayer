@@ -50,7 +50,10 @@ internal sealed class MainForm : Form
         };
         _scrollHost.Dock = DockStyle.Fill;
         _scrollHost.AutoScroll = true;
+        _scrollHost.HorizontalScroll.Enabled = false;
+        _scrollHost.HorizontalScroll.Visible = false;
         _scrollHost.BackColor = Theme.Background;
+        _scrollHost.Resize += (_, _) => ResizeShellToHost();
         _configPanel = BuildConfigPanel();
         _accessPanel = BuildAccessPanel();
         _scrollHost.Controls.Add(_shell);
@@ -385,7 +388,24 @@ internal sealed class MainForm : Form
         }
 
         _shell.ResumeLayout();
+        ResizeShellToHost();
         ResizeLibraryEditors();
+    }
+
+    private void ResizeShellToHost()
+    {
+        if (_shell is null) return;
+        _scrollHost.HorizontalScroll.Enabled = false;
+        _scrollHost.HorizontalScroll.Visible = false;
+        if (_stackedLayout)
+        {
+            _shell.Width = Math.Max(0, _scrollHost.ClientSize.Width);
+            _scrollHost.AutoScrollMinSize = new Size(0, _shell.Height);
+        }
+        else
+        {
+            _scrollHost.AutoScrollMinSize = Size.Empty;
+        }
     }
 
     private void RenderQr(string text)
