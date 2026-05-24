@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#0e1117" />
+    <title>Remote Media 设置</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body class="setup-body">
+    <main class="setup-shell">
+      <aside class="setup-sidebar">
+        <div class="brand setup-brand">
+          <span class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M5 7.5A2.5 2.5 0 0 1 7.5 5h9A2.5 2.5 0 0 1 19 7.5v9a2.5 2.5 0 0 1-2.5 2.5h-9A2.5 2.5 0 0 1 5 16.5v-9Z"/><path d="m10 9 5 3-5 3V9Z"/></svg>
+          </span>
+          <div>
+            <h1>Remote Media</h1>
+            <p>电脑端设置</p>
+          </div>
+        </div>
+        <nav class="setup-nav" aria-label="设置导航">
+          <a class="active" href="#libraries">媒体文件夹</a>
+          <a href="#phone">手机访问</a>
+        </nav>
+      </aside>
+
+      <section class="setup-main">
+        <header class="setup-hero">
+          <div>
+            <h2>选择文件夹，手机直接播放</h2>
+            <p>在这台电脑上添加要共享的音乐或视频文件夹。手机端只会看到你设置的显示名称。</p>
+          </div>
+          <a class="ghost-button setup-open-player" href="/">打开手机端页面</a>
+        </header>
+
+        <section class="setup-grid">
+          <article class="setup-card" id="libraries">
+            <div class="section-head flush">
+              <div>
+                <h2>媒体文件夹</h2>
+                <p>添加、命名，并按需设置访问密码。</p>
+              </div>
+              <button class="primary-inline" id="addLibraryButton" type="button">添加文件夹</button>
+            </div>
+            <div class="setup-list" id="setupList"></div>
+            <div class="setup-actions">
+              <span id="saveStatus">设置会保存在这台电脑上。</span>
+              <button class="primary-button compact" id="saveButton" type="button">保存设置</button>
+            </div>
+          </article>
+
+          <article class="setup-card access-card" id="phone">
+            <div>
+              <h2>手机访问地址</h2>
+              <p>让手机和电脑连接同一个 Wi-Fi，然后在手机浏览器打开这个地址。</p>
+            </div>
+            <button class="access-url" id="primaryUrlButton" type="button">正在读取...</button>
+            <div class="qr-placeholder" aria-hidden="true">
+              <span></span><span></span><span></span><span></span>
+            </div>
+            <div class="url-list" id="urlList"></div>
+          </article>
+        </section>
+      </section>
+    </main>
+
+    <template id="libraryTemplate">
+      <article class="setup-library">
+        <div class="library-card-head">
+          <div>
+            <label>显示名称</label>
+            <input class="library-name" placeholder="例如：客厅音乐" />
+          </div>
+          <button class="icon-button small remove-library" type="button" aria-label="删除" title="删除">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2M10 11v6M14 11v6M6 6l1 14h10l1-14"/></svg>
+          </button>
+        </div>
+        <label>文件夹</label>
+        <div class="folder-row">
+          <input class="library-path" placeholder="点击选择，或粘贴文件夹路径" />
+          <button class="choose-folder" type="button">选择</button>
+        </div>
+        <label class="password-toggle">
+          <input class="library-lock" type="checkbox" />
+          <span>需要密码才能打开</span>
+        </label>
+        <input class="library-password" type="password" placeholder="留空则不修改已有密码" hidden />
+      </article>
+    </template>
+
+    <script src="/js/setup.js" type="module"></script>
+  </body>
+</html>

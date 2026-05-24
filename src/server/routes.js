@@ -1,12 +1,15 @@
 import { audioExts, videoExts } from './media-types.js';
-import { listLibraryFolder, publicLibrary } from './libraries.js';
+import { listLibraryFolder, privateLibrary, publicLibrary } from './libraries.js';
 import { readJsonBody, sendJson } from './http.js';
 import { verifyPassword } from './security.js';
+import { saveLibraries } from './config.js';
+import { getAccessInfo, pickFolder } from './setup.js';
 
 export function getHealth(config) {
   return {
     ok: true,
     libraries: config.libraries.map(publicLibrary),
+    access: getAccessInfo(config),
     supported: supportedMedia()
   };
 }
@@ -16,6 +19,36 @@ export function getLibraries(config) {
     libraries: config.libraries.map(publicLibrary),
     supported: supportedMedia()
   };
+}
+
+export function getSetup(config) {
+  return {
+    libraries: config.libraries.map(privateLibrary),
+    access: getAccessInfo(config)
+  };
+}
+
+export async function saveSetup(req, res, config) {
+  try {
+    const body = await readJsonBody(req);
+    const libraries = Array.isArray(body.libraries) ? body.libraries : [];
+    const saved = await saveLibraries(config, libraries);
+    return sendJson(res, 200, {
+      libraries: saved.map(privateLibrary),
+      access: getAccessInfo(config)
+    });
+  } catch (error) {
+    return sendJson(res, 400, { error: error.message || '保存失败' });
+  }
+}
+
+export async function chooseFolder(req, res) {
+  try {
+    const folder = await pickFolder();
+    return sendJson(res, 200, { path: folder });
+  } catch (error) {
+    return sendJson(res, error.status || 400, { error: error.message || '没有选择文件夹' });
+  }
 }
 
 export async function unlockLibrary(req, res, config, security) {

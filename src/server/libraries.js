@@ -10,6 +10,16 @@ export function publicLibrary(library) {
   };
 }
 
+export function privateLibrary(library) {
+  return {
+    id: library.id,
+    name: library.name,
+    path: library.path,
+    locked: library.locked,
+    hasPassword: library.locked
+  };
+}
+
 export function safeResolve(library, relativePath = '') {
   const clean = String(relativePath).replaceAll('\\', '/').replace(/^\/+/, '');
   const resolved = path.resolve(library.path, clean);

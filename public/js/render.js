@@ -4,8 +4,7 @@ import { state, tokenFor } from './state.js';
 import { escapeHtml, formatBytes, kindText } from './utils.js';
 
 export function displayServer() {
-  const value = state.server || window.location.origin;
-  els.serverLabel.textContent = value;
+  els.serverLabel.textContent = '已连接电脑端';
   els.serverInput.value = state.server;
 }
 

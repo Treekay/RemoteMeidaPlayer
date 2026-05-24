@@ -33,6 +33,14 @@ http://192.168.1.20:5178
 
 手机和电脑需要在同一个局域网内。Windows 防火墙如果弹窗，请允许 Node.js 在专用网络中通信。
 
+电脑端设置界面：
+
+```text
+http://localhost:5178/setup
+```
+
+设置界面只允许在运行应用的这台电脑上打开。普通用户可以在这里点击“选择”添加媒体文件夹、设置手机端看到的显示名称、按需启用访问密码，然后把页面显示的手机访问地址发到手机浏览器打开。
+
 ## 多媒体库配置
 
 复制 `media.config.example.json`，按需修改成自己的配置：
@@ -104,6 +112,7 @@ npm start -- --config ".\media.config.json" --port 5178
 server.js                 # 服务端启动入口
 src/server/               # 服务端模块：配置、路由、加密、媒体库、流式播放、静态文件
 public/index.html         # 前端页面外壳
+public/setup.html         # 电脑端配置界面
 public/styles.css         # 前端样式
 public/js/                # 前端模块：状态、API、渲染、播放器、密码加密
 public/sw.js              # PWA 静态资源缓存

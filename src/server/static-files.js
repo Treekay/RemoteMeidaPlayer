@@ -5,7 +5,7 @@ import { sendText } from './http.js';
 import { mimeFor } from './media-types.js';
 
 export async function serveStatic(req, res, publicDir, pathname) {
-  const filePath = pathname === '/' ? '/index.html' : pathname;
+  const filePath = staticFilePath(pathname);
   const resolved = path.resolve(publicDir, '.' + decodeURIComponent(filePath));
   if (resolved !== publicDir && !resolved.startsWith(publicDir + path.sep)) {
     return sendText(res, 400, 'Invalid path');
@@ -24,4 +24,10 @@ export async function serveStatic(req, res, publicDir, pathname) {
   } catch {
     sendText(res, 404, 'Not found');
   }
+}
+
+function staticFilePath(pathname) {
+  if (pathname === '/') return '/index.html';
+  if (pathname === '/setup') return '/setup.html';
+  return pathname;
 }
