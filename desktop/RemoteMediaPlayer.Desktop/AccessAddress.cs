@@ -7,25 +7,28 @@ internal static class AccessAddress
 {
     public static string GetPrimaryUrl(AppConfig config, int port)
     {
-        var publicUrl = Normalize(config.PublicUrl);
-        if (!string.IsNullOrWhiteSpace(publicUrl)) return publicUrl;
-        var lanIp = GetLanIpAddress();
-        return $"http://{lanIp}:{port}";
+        return GetAccessUrls(config, port).First();
     }
 
     public static string Normalize(string value) => (value ?? "").Trim().TrimEnd('/');
 
-    private static string GetLanIpAddress()
+    public static IReadOnlyList<string> GetAccessUrls(AppConfig config, int port)
+    {
+        var publicUrl = Normalize(config.PublicUrl);
+        if (!string.IsNullOrWhiteSpace(publicUrl)) return [publicUrl];
+
+        var lanIps = GetLanIpAddresses();
+        if (lanIps.Count == 0) return [$"http://127.0.0.1:{port}"];
+        return lanIps.Select(address => $"http://{address}:{port}").Distinct().ToList();
+    }
+
+    private static IReadOnlyList<string> GetLanIpAddresses()
     {
         var addresses = new List<AddressCandidate>();
         foreach (var network in NetworkInterface.GetAllNetworkInterfaces())
         {
             if (network.OperationalStatus != OperationalStatus.Up) continue;
             if (network.NetworkInterfaceType == NetworkInterfaceType.Loopback) continue;
-            if (network.Description.Contains("Virtual", StringComparison.OrdinalIgnoreCase)) continue;
-            if (network.Description.Contains("VMware", StringComparison.OrdinalIgnoreCase)) continue;
-            if (network.Description.Contains("Hyper-V", StringComparison.OrdinalIgnoreCase)) continue;
-            if (network.Description.Contains("VirtualBox", StringComparison.OrdinalIgnoreCase)) continue;
 
             var ipProperties = network.GetIPProperties();
             var hasGateway = ipProperties.GatewayAddresses.Any(gateway =>
@@ -43,7 +46,8 @@ internal static class AccessAddress
             .Where(candidate => !candidate.Address.StartsWith("169.254."))
             .OrderBy(AddressPriority)
             .Select(candidate => candidate.Address)
-            .FirstOrDefault() ?? "127.0.0.1";
+            .Distinct()
+            .ToList();
     }
 
     private static int AddressPriority(AddressCandidate candidate)

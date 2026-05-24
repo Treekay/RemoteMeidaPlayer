@@ -9,6 +9,7 @@ internal sealed class MainForm : Form
     private readonly TextBox _publicUrl = new();
     private readonly Label _status = new();
     private readonly Label _accessUrl = new();
+    private readonly ComboBox _accessChoices = new();
     private readonly PictureBox _qrImage = new();
     private readonly RoundedButton _serverButton = new();
     private readonly ServerProcess _server = new();
@@ -17,7 +18,7 @@ internal sealed class MainForm : Form
     public MainForm()
     {
         Text = "Remote Media";
-        MinimumSize = new Size(1180, 760);
+        MinimumSize = new Size(1200, 780);
         BackColor = Theme.Background;
         ForeColor = Theme.Text;
         Font = new Font("Microsoft YaHei UI", 9F);
@@ -66,12 +67,12 @@ internal sealed class MainForm : Form
 
         var publicRow = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 2, BackColor = Theme.Surface, Margin = new Padding(0, 14, 0, 8) };
         publicRow.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
-        publicRow.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 164));
+        publicRow.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 174));
         StyleTextBox(_publicUrl, "公网访问地址（可选）/ Public URL (optional), e.g. https://media.example.com");
         publicRow.Controls.Add(_publicUrl, 0, 0);
 
-        var applyUrl = SecondaryButton("更新二维码 / Update QR", 154);
-        applyUrl.Click += (_, _) => RefreshAccess();
+        var applyUrl = SecondaryButton("更新地址 / Update", 164);
+        applyUrl.Click += (_, _) => RefreshAccessChoices();
         publicRow.Controls.Add(applyUrl, 1, 0);
         layout.Controls.Add(publicRow, 0, 1);
 
@@ -90,11 +91,11 @@ internal sealed class MainForm : Form
             BackColor = Theme.Surface,
             Padding = new Padding(0, 12, 0, 0)
         };
-        var add = SecondaryButton("添加文件夹 / Add", 148);
+        var add = SecondaryButton("添加文件夹 / Add", 150);
         add.Click += (_, _) => AddLibrary(new MediaLibrary());
-        var save = SecondaryButton("保存设置 / Save", 148);
+        var save = SecondaryButton("保存设置 / Save", 150);
         save.Click += (_, _) => SaveConfig();
-        StylePrimaryButton(_serverButton, "启动服务 / Start", 148);
+        StylePrimaryButton(_serverButton, "启动服务 / Start", 150);
         _serverButton.Click += (_, _) => ToggleServer();
         actions.Controls.Add(add);
         actions.Controls.Add(save);
@@ -113,23 +114,25 @@ internal sealed class MainForm : Form
     private Control BuildAccessPanel()
     {
         var panel = CardPanel();
-        var layout = new TableLayoutPanel { Dock = DockStyle.Fill, RowCount = 5, BackColor = Theme.Surface };
+        var layout = new TableLayoutPanel { Dock = DockStyle.Fill, RowCount = 7, BackColor = Theme.Surface };
         layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
-        layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 318));
-        layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+        layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 312));
+        layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 28));
+        layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 42));
+        layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 44));
         layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 50));
         layout.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
 
         layout.Controls.Add(Header(
             "手机访问 / Phone Access",
-            "启动服务后，用手机相机扫描二维码即可打开播放端。\nStart the service, then scan this QR code on your phone."), 0, 0);
+            "启动服务后，如果默认地址打不开，请在下面切换到能访问的 IP。\nStart the service. If the default URL fails, choose another IP below."), 0, 0);
 
         var qrFrame = new RoundedPanel
         {
             Dock = DockStyle.Fill,
             BackColor = Color.FromArgb(243, 246, 251),
             Padding = new Padding(16),
-            Margin = new Padding(0, 18, 0, 14),
+            Margin = new Padding(0, 18, 0, 12),
             Radius = 10
         };
         _qrImage.Dock = DockStyle.Fill;
@@ -138,29 +141,38 @@ internal sealed class MainForm : Form
         qrFrame.Controls.Add(_qrImage);
         layout.Controls.Add(qrFrame, 0, 1);
 
+        layout.Controls.Add(SmallLabel("访问地址 / Access URL"), 0, 2);
+
+        _accessChoices.Dock = DockStyle.Fill;
+        _accessChoices.DropDownStyle = ComboBoxStyle.DropDownList;
+        _accessChoices.BackColor = Theme.Input;
+        _accessChoices.ForeColor = Theme.Text;
+        _accessChoices.SelectedIndexChanged += (_, _) => UseSelectedAccessUrl();
+        layout.Controls.Add(_accessChoices, 0, 3);
+
         _accessUrl.Dock = DockStyle.Fill;
         _accessUrl.ForeColor = Theme.Accent;
-        _accessUrl.Font = new Font(Font.FontFamily, 13F, FontStyle.Bold);
+        _accessUrl.Font = new Font(Font.FontFamily, 12F, FontStyle.Bold);
         _accessUrl.AutoEllipsis = true;
-        layout.Controls.Add(_accessUrl, 0, 2);
+        layout.Controls.Add(_accessUrl, 0, 4);
 
-        var copy = SecondaryButton("复制访问地址 / Copy URL", 190);
+        var copy = SecondaryButton("复制访问地址 / Copy URL", 200);
         copy.Click += (_, _) =>
         {
             if (!string.IsNullOrWhiteSpace(_accessUrl.Text)) Clipboard.SetText(_accessUrl.Text);
             _status.Text = "访问地址已复制 / URL copied.";
         };
-        layout.Controls.Add(copy, 0, 3);
+        layout.Controls.Add(copy, 0, 5);
 
         var hint = new Label
         {
-            Text = "如果配置了公网访问地址，二维码会使用公网地址；否则使用这台电脑的局域网地址。\nIf a public URL is set, the QR code uses it; otherwise it uses the local network address.",
+            Text = "提示：二维码会使用上方选中的地址。手机打不开时，逐个切换地址再扫码。\nTip: the QR code uses the selected URL. If it fails, try the next address.",
             ForeColor = Theme.Muted,
             Dock = DockStyle.Top,
             AutoSize = false,
             Height = 76
         };
-        layout.Controls.Add(hint, 0, 4);
+        layout.Controls.Add(hint, 0, 6);
 
         panel.Controls.Add(layout);
         return panel;
@@ -175,7 +187,7 @@ internal sealed class MainForm : Form
         {
             AddLibrary(library);
         }
-        RefreshAccess();
+        RefreshAccessChoices();
         _status.Text = $"配置文件 / Config: {ProjectPaths.ConfigPath}";
     }
 
@@ -189,7 +201,7 @@ internal sealed class MainForm : Form
             return;
         }
         _config.Save(ProjectPaths.ConfigPath);
-        RefreshAccess();
+        RefreshAccessChoices();
         _status.Text = "设置已保存。服务运行中时请重启服务让改动生效 / Saved. Restart the service to apply changes.";
     }
 
@@ -198,7 +210,7 @@ internal sealed class MainForm : Form
         if (_server.IsRunning)
         {
             _server.Stop();
-            StylePrimaryButton(_serverButton, "启动服务 / Start", 148);
+            StylePrimaryButton(_serverButton, "启动服务 / Start", 150);
             _status.Text = "服务已停止 / Service stopped.";
             return;
         }
@@ -207,7 +219,7 @@ internal sealed class MainForm : Form
         _server.Start(Port);
         _serverButton.Text = "停止服务 / Stop";
         _status.Text = "服务已启动。手机扫码即可访问 / Service started. Scan the QR code on your phone.";
-        RefreshAccess();
+        RefreshAccessChoices();
     }
 
     private void AddLibrary(MediaLibrary library)
@@ -220,7 +232,7 @@ internal sealed class MainForm : Form
 
     private void ResizeLibraryEditors()
     {
-        var width = Math.Max(520, _libraryList.ClientSize.Width - SystemInformation.VerticalScrollBarWidth - 6);
+        var width = Math.Max(540, _libraryList.ClientSize.Width - SystemInformation.VerticalScrollBarWidth - 6);
         foreach (Control editor in _libraryList.Controls)
         {
             editor.Width = width;
@@ -236,10 +248,36 @@ internal sealed class MainForm : Form
             .ToList();
     }
 
-    private void RefreshAccess()
+    private void RefreshAccessChoices()
     {
+        var current = _accessChoices.SelectedItem?.ToString();
         var tempConfig = new AppConfig { PublicUrl = AccessAddress.Normalize(_publicUrl.Text) };
-        var url = AccessAddress.GetPrimaryUrl(tempConfig, Port);
+        var urls = AccessAddress.GetAccessUrls(tempConfig, Port);
+        _accessChoices.Items.Clear();
+        foreach (var url in urls)
+        {
+            _accessChoices.Items.Add(url);
+        }
+
+        var selected = urls.Contains(current) ? current : urls.FirstOrDefault();
+        if (selected != null)
+        {
+            _accessChoices.SelectedItem = selected;
+        }
+        else
+        {
+            UseAccessUrl($"http://127.0.0.1:{Port}");
+        }
+    }
+
+    private void UseSelectedAccessUrl()
+    {
+        var selected = _accessChoices.SelectedItem?.ToString();
+        if (!string.IsNullOrWhiteSpace(selected)) UseAccessUrl(selected);
+    }
+
+    private void UseAccessUrl(string url)
+    {
         _accessUrl.Text = url;
         RenderQr(url);
     }
@@ -270,7 +308,7 @@ internal sealed class MainForm : Form
         {
             Text = title,
             ForeColor = Theme.Text,
-            Font = new Font("Microsoft YaHei UI", 21F, FontStyle.Bold),
+            Font = new Font("Microsoft YaHei UI", 20F, FontStyle.Bold),
             AutoSize = true
         });
         panel.Controls.Add(new Label
@@ -283,6 +321,14 @@ internal sealed class MainForm : Form
         });
         return panel;
     }
+
+    private static Label SmallLabel(string text) => new()
+    {
+        Text = text,
+        ForeColor = Theme.Muted,
+        Dock = DockStyle.Fill,
+        TextAlign = ContentAlignment.BottomLeft
+    };
 
     private static void StyleTextBox(TextBox textBox, string placeholder)
     {
