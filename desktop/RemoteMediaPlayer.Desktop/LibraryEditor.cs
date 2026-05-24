@@ -35,52 +35,59 @@ internal sealed class LibraryEditor : UserControl
 
     private void BuildUi()
     {
-        AutoSize = true;
-        Dock = DockStyle.Top;
-        Padding = new Padding(14);
+        Height = 166;
         Margin = new Padding(0, 0, 0, 12);
-        BackColor = Color.FromArgb(24, 29, 39);
+        Padding = new Padding(16);
+        BackColor = Theme.SurfaceAlt;
 
-        var layout = new TableLayoutPanel
+        var root = new TableLayoutPanel
         {
             Dock = DockStyle.Fill,
-            AutoSize = true,
             ColumnCount = 3,
-            RowCount = 4
+            RowCount = 5,
+            BackColor = Theme.SurfaceAlt
         };
-        layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 45));
-        layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 55));
-        layout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 86));
+        root.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 38));
+        root.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 62));
+        root.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 92));
+        root.RowStyles.Add(new RowStyle(SizeType.Absolute, 24));
+        root.RowStyles.Add(new RowStyle(SizeType.Absolute, 38));
+        root.RowStyles.Add(new RowStyle(SizeType.Absolute, 14));
+        root.RowStyles.Add(new RowStyle(SizeType.Absolute, 30));
+        root.RowStyles.Add(new RowStyle(SizeType.Absolute, 38));
 
-        var title = Label("显示名称");
-        var pathLabel = Label("文件夹");
-        var remove = Button("删除");
+        root.Controls.Add(Label("显示名称"), 0, 0);
+        root.Controls.Add(Label("文件夹"), 1, 0);
+
+        var remove = SecondaryButton("删除");
         remove.Click += (_, _) => RemoveRequested?.Invoke(this, EventArgs.Empty);
+        root.Controls.Add(remove, 2, 0);
+        root.SetRowSpan(remove, 2);
 
-        _name.PlaceholderText = "例如：客厅音乐";
-        _path.PlaceholderText = "选择或粘贴文件夹路径";
-        _password.PlaceholderText = "访问密码";
+        StyleTextBox(_name, "例如：客厅音乐");
+        StyleTextBox(_path, "选择或粘贴文件夹路径");
+        StyleTextBox(_password, "访问密码");
         _password.UseSystemPasswordChar = true;
-        _locked.Text = "需要密码才能打开";
-        _locked.ForeColor = Color.FromArgb(214, 220, 229);
-        _locked.AutoSize = true;
-        _locked.CheckedChanged += (_, _) => _password.Visible = _locked.Checked;
 
-        var choose = Button("选择");
+        root.Controls.Add(_name, 0, 1);
+        root.Controls.Add(_path, 1, 1);
+
+        var choose = SecondaryButton("选择");
         choose.Click += (_, _) => ChooseFolder();
+        root.Controls.Add(choose, 2, 4);
 
-        layout.Controls.Add(title, 0, 0);
-        layout.Controls.Add(pathLabel, 1, 0);
-        layout.Controls.Add(remove, 2, 0);
-        layout.Controls.Add(_name, 0, 1);
-        layout.Controls.Add(_path, 1, 1);
-        layout.Controls.Add(choose, 2, 1);
-        layout.Controls.Add(_locked, 0, 2);
-        layout.SetColumnSpan(_locked, 3);
-        layout.Controls.Add(_password, 0, 3);
-        layout.SetColumnSpan(_password, 3);
+        _locked.Text = "需要密码才能打开";
+        _locked.ForeColor = Theme.Text;
+        _locked.AutoSize = true;
+        _locked.Margin = new Padding(0, 0, 0, 0);
+        _locked.CheckedChanged += (_, _) => _password.Visible = _locked.Checked;
+        root.Controls.Add(_locked, 0, 3);
+        root.SetColumnSpan(_locked, 3);
 
-        Controls.Add(layout);
+        root.Controls.Add(_password, 0, 4);
+        root.SetColumnSpan(_password, 2);
+
+        Controls.Add(root);
     }
 
     private void ChooseFolder()
@@ -107,18 +114,28 @@ internal sealed class LibraryEditor : UserControl
     private static Label Label(string text) => new()
     {
         Text = text,
-        ForeColor = Color.FromArgb(161, 172, 188),
+        ForeColor = Theme.Muted,
         AutoSize = true,
-        Margin = new Padding(0, 0, 0, 6)
+        Margin = new Padding(0, 0, 0, 4)
     };
 
-    private static Button Button(string text) => new()
+    private static void StyleTextBox(TextBox textBox, string placeholder)
+    {
+        textBox.Dock = DockStyle.Fill;
+        textBox.PlaceholderText = placeholder;
+        textBox.BorderStyle = BorderStyle.FixedSingle;
+        textBox.BackColor = Theme.Input;
+        textBox.ForeColor = Theme.Text;
+        textBox.Margin = new Padding(0, 0, 10, 0);
+    }
+
+    private static Button SecondaryButton(string text) => new()
     {
         Text = text,
-        Height = 32,
         Dock = DockStyle.Fill,
-        BackColor = Color.FromArgb(48, 58, 74),
-        ForeColor = Color.White,
-        FlatStyle = FlatStyle.Flat
+        BackColor = Theme.SurfaceStrong,
+        ForeColor = Theme.Text,
+        FlatStyle = FlatStyle.Flat,
+        Margin = new Padding(0, 0, 0, 0)
     };
 }

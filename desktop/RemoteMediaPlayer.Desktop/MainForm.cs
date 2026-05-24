@@ -1,3 +1,5 @@
+using QRCoder;
+
 namespace RemoteMediaPlayer.Desktop;
 
 internal sealed class MainForm : Form
@@ -7,7 +9,7 @@ internal sealed class MainForm : Form
     private readonly TextBox _publicUrl = new();
     private readonly Label _status = new();
     private readonly Label _accessUrl = new();
-    private readonly WebBrowser _qrBrowser = new();
+    private readonly PictureBox _qrImage = new();
     private readonly Button _serverButton = new();
     private readonly ServerProcess _server = new();
     private AppConfig _config = AppConfig.Default();
@@ -15,9 +17,9 @@ internal sealed class MainForm : Form
     public MainForm()
     {
         Text = "Remote Media";
-        MinimumSize = new Size(1040, 720);
-        BackColor = Color.FromArgb(14, 17, 23);
-        ForeColor = Color.White;
+        MinimumSize = new Size(1100, 740);
+        BackColor = Theme.Background;
+        ForeColor = Theme.Text;
         Font = new Font("Microsoft YaHei UI", 9F);
         BuildUi();
         LoadConfig();
@@ -25,6 +27,7 @@ internal sealed class MainForm : Form
 
     protected override void OnFormClosing(FormClosingEventArgs e)
     {
+        _qrImage.Image?.Dispose();
         _server.Dispose();
         base.OnFormClosing(e);
     }
@@ -35,11 +38,11 @@ internal sealed class MainForm : Form
         {
             Dock = DockStyle.Fill,
             Padding = new Padding(18),
-            ColumnCount = 2
+            ColumnCount = 2,
+            BackColor = Theme.Background
         };
         shell.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 64));
         shell.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 36));
-
         shell.Controls.Add(BuildConfigPanel(), 0, 0);
         shell.Controls.Add(BuildAccessPanel(), 1, 0);
         Controls.Add(shell);
@@ -47,23 +50,23 @@ internal sealed class MainForm : Form
 
     private Control BuildConfigPanel()
     {
-        var panel = Panel();
-        var layout = new TableLayoutPanel { Dock = DockStyle.Fill, RowCount = 5 };
+        var panel = CardPanel();
+        panel.Margin = new Padding(0, 0, 16, 0);
+        var layout = new TableLayoutPanel { Dock = DockStyle.Fill, RowCount = 5, BackColor = Theme.Surface };
         layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
-        layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+        layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 58));
         layout.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
-        layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
-        layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+        layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 52));
+        layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 34));
 
         layout.Controls.Add(Header("电脑端设置", "选择要共享的媒体文件夹。手机端只会看到显示名称，不会看到电脑里的真实路径。"), 0, 0);
 
-        var publicRow = new TableLayoutPanel { Dock = DockStyle.Top, ColumnCount = 2, AutoSize = true, Margin = new Padding(0, 14, 0, 18) };
+        var publicRow = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 2, BackColor = Theme.Surface, Margin = new Padding(0, 14, 0, 8) };
         publicRow.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
-        publicRow.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 132));
-        _publicUrl.PlaceholderText = "公网访问地址（可选，例如 https://media.example.com）";
-        _publicUrl.Height = 36;
+        publicRow.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 128));
+        StyleTextBox(_publicUrl, "公网访问地址（可选，例如 https://media.example.com）");
         publicRow.Controls.Add(_publicUrl, 0, 0);
-        var applyUrl = Button("更新二维码");
+        var applyUrl = SecondaryButton("更新二维码");
         applyUrl.Click += (_, _) => RefreshAccess();
         publicRow.Controls.Add(applyUrl, 1, 0);
         layout.Controls.Add(publicRow, 0, 1);
@@ -72,28 +75,32 @@ internal sealed class MainForm : Form
         _libraryList.FlowDirection = FlowDirection.TopDown;
         _libraryList.WrapContents = false;
         _libraryList.AutoScroll = true;
+        _libraryList.BackColor = Theme.Surface;
+        _libraryList.Resize += (_, _) => ResizeLibraryEditors();
         layout.Controls.Add(_libraryList, 0, 2);
 
-        var actions = new FlowLayoutPanel { Dock = DockStyle.Top, AutoSize = true, FlowDirection = FlowDirection.LeftToRight };
-        var add = Button("添加文件夹");
+        var actions = new FlowLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            AutoSize = false,
+            FlowDirection = FlowDirection.LeftToRight,
+            BackColor = Theme.Surface,
+            Padding = new Padding(0, 10, 0, 0)
+        };
+        var add = SecondaryButton("添加文件夹");
         add.Click += (_, _) => AddLibrary(new MediaLibrary());
-        var save = Button("保存设置");
+        var save = SecondaryButton("保存设置");
         save.Click += (_, _) => SaveConfig();
-        _serverButton.Text = "启动服务";
-        _serverButton.Height = 38;
-        _serverButton.Width = 120;
-        _serverButton.BackColor = Color.FromArgb(93, 214, 182);
-        _serverButton.ForeColor = Color.FromArgb(6, 17, 14);
-        _serverButton.FlatStyle = FlatStyle.Flat;
+        StylePrimaryButton(_serverButton, "启动服务");
         _serverButton.Click += (_, _) => ToggleServer();
         actions.Controls.Add(add);
         actions.Controls.Add(save);
         actions.Controls.Add(_serverButton);
         layout.Controls.Add(actions, 0, 3);
 
-        _status.ForeColor = Color.FromArgb(161, 172, 188);
-        _status.AutoSize = true;
-        _status.Margin = new Padding(0, 12, 0, 0);
+        _status.ForeColor = Theme.Muted;
+        _status.AutoEllipsis = true;
+        _status.Dock = DockStyle.Fill;
         layout.Controls.Add(_status, 0, 4);
         panel.Controls.Add(layout);
         return panel;
@@ -101,32 +108,52 @@ internal sealed class MainForm : Form
 
     private Control BuildAccessPanel()
     {
-        var panel = Panel();
-        var layout = new TableLayoutPanel { Dock = DockStyle.Fill, RowCount = 4 };
+        var panel = CardPanel();
+        var layout = new TableLayoutPanel { Dock = DockStyle.Fill, RowCount = 5, BackColor = Theme.Surface };
         layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
-        layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 328));
+        layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 318));
         layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+        layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 48));
         layout.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
         layout.Controls.Add(Header("手机访问", "启动服务后，用手机相机扫描二维码即可打开播放端。"), 0, 0);
 
-        _qrBrowser.Dock = DockStyle.Fill;
-        _qrBrowser.ScrollBarsEnabled = false;
-        _qrBrowser.ScriptErrorsSuppressed = true;
-        layout.Controls.Add(_qrBrowser, 0, 1);
+        var qrFrame = new Panel
+        {
+            Dock = DockStyle.Fill,
+            BackColor = Color.FromArgb(243, 246, 251),
+            Padding = new Padding(16),
+            Margin = new Padding(0, 18, 0, 14)
+        };
+        _qrImage.Dock = DockStyle.Fill;
+        _qrImage.SizeMode = PictureBoxSizeMode.Zoom;
+        _qrImage.BackColor = Color.FromArgb(243, 246, 251);
+        qrFrame.Controls.Add(_qrImage);
+        layout.Controls.Add(qrFrame, 0, 1);
 
-        _accessUrl.Dock = DockStyle.Top;
-        _accessUrl.ForeColor = Color.FromArgb(93, 214, 182);
-        _accessUrl.Font = new Font(Font.FontFamily, 12F, FontStyle.Bold);
-        _accessUrl.Margin = new Padding(0, 14, 0, 8);
+        _accessUrl.Dock = DockStyle.Fill;
+        _accessUrl.ForeColor = Theme.Accent;
+        _accessUrl.Font = new Font(Font.FontFamily, 13F, FontStyle.Bold);
+        _accessUrl.AutoEllipsis = true;
         layout.Controls.Add(_accessUrl, 0, 2);
 
-        var copy = Button("复制访问地址");
+        var copy = SecondaryButton("复制访问地址");
+        copy.Width = 148;
         copy.Click += (_, _) =>
         {
             if (!string.IsNullOrWhiteSpace(_accessUrl.Text)) Clipboard.SetText(_accessUrl.Text);
             _status.Text = "访问地址已复制。";
         };
         layout.Controls.Add(copy, 0, 3);
+
+        var hint = new Label
+        {
+            Text = "如果配置了公网访问地址，二维码会使用公网地址；否则使用这台电脑的局域网地址。",
+            ForeColor = Theme.Muted,
+            Dock = DockStyle.Top,
+            AutoSize = false,
+            Height = 64
+        };
+        layout.Controls.Add(hint, 0, 4);
         panel.Controls.Add(layout);
         return panel;
     }
@@ -163,7 +190,7 @@ internal sealed class MainForm : Form
         if (_server.IsRunning)
         {
             _server.Stop();
-            _serverButton.Text = "启动服务";
+            StylePrimaryButton(_serverButton, "启动服务");
             _status.Text = "服务已停止。";
             return;
         }
@@ -178,10 +205,18 @@ internal sealed class MainForm : Form
     private void AddLibrary(MediaLibrary library)
     {
         var editor = new LibraryEditor(library);
-        editor.Width = _libraryList.ClientSize.Width - 26;
-        editor.Anchor = AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Top;
         editor.RemoveRequested += (_, _) => _libraryList.Controls.Remove(editor);
         _libraryList.Controls.Add(editor);
+        ResizeLibraryEditors();
+    }
+
+    private void ResizeLibraryEditors()
+    {
+        var width = Math.Max(360, _libraryList.ClientSize.Width - SystemInformation.VerticalScrollBarWidth - 4);
+        foreach (Control editor in _libraryList.Controls)
+        {
+            editor.Width = width;
+        }
     }
 
     private List<MediaLibrary> ReadLibraries()
@@ -198,54 +233,77 @@ internal sealed class MainForm : Form
         var tempConfig = new AppConfig { PublicUrl = AccessAddress.Normalize(_publicUrl.Text) };
         var url = AccessAddress.GetPrimaryUrl(tempConfig, Port);
         _accessUrl.Text = url;
-        var qrSource = $"http://127.0.0.1:{Port}/api/qr?text={Uri.EscapeDataString(url)}";
-        _qrBrowser.DocumentText = $"""
-            <!doctype html>
-            <html>
-              <body style="margin:0;display:grid;place-items:center;height:100vh;background:#f3f6fb;">
-                <img src="{qrSource}" style="width:286px;height:286px;" alt="QR" />
-              </body>
-            </html>
-            """;
+        RenderQr(url);
     }
 
-    private static Panel Panel() => new()
+    private void RenderQr(string text)
+    {
+        using var generator = new QRCodeGenerator();
+        using var data = generator.CreateQrCode(text, QRCodeGenerator.ECCLevel.M);
+        using var qrCode = new QRCode(data);
+        var bitmap = qrCode.GetGraphic(12, Color.FromArgb(14, 17, 23), Color.FromArgb(243, 246, 251), drawQuietZones: true);
+        var previous = _qrImage.Image;
+        _qrImage.Image = bitmap;
+        previous?.Dispose();
+    }
+
+    private static Panel CardPanel() => new()
     {
         Dock = DockStyle.Fill,
-        Padding = new Padding(22),
-        Margin = new Padding(0, 0, 16, 0),
-        BackColor = Color.FromArgb(23, 27, 35)
+        Padding = new Padding(28),
+        BackColor = Theme.Surface
     };
 
     private static Control Header(string title, string subtitle)
     {
-        var panel = new FlowLayoutPanel { FlowDirection = FlowDirection.TopDown, AutoSize = true, Dock = DockStyle.Top };
+        var panel = new FlowLayoutPanel { FlowDirection = FlowDirection.TopDown, AutoSize = true, Dock = DockStyle.Top, BackColor = Theme.Surface };
         panel.Controls.Add(new Label
         {
             Text = title,
-            ForeColor = Color.White,
-            Font = new Font("Microsoft YaHei UI", 20F, FontStyle.Bold),
+            ForeColor = Theme.Text,
+            Font = new Font("Microsoft YaHei UI", 21F, FontStyle.Bold),
             AutoSize = true
         });
         panel.Controls.Add(new Label
         {
             Text = subtitle,
-            ForeColor = Color.FromArgb(161, 172, 188),
+            ForeColor = Theme.Muted,
             AutoSize = true,
-            MaximumSize = new Size(620, 0),
+            MaximumSize = new Size(660, 0),
             Margin = new Padding(0, 8, 0, 0)
         });
         return panel;
     }
 
-    private static Button Button(string text) => new()
+    private static void StyleTextBox(TextBox textBox, string placeholder)
+    {
+        textBox.Dock = DockStyle.Fill;
+        textBox.PlaceholderText = placeholder;
+        textBox.BorderStyle = BorderStyle.FixedSingle;
+        textBox.BackColor = Theme.Input;
+        textBox.ForeColor = Theme.Text;
+        textBox.Margin = new Padding(0, 0, 10, 0);
+    }
+
+    private static Button SecondaryButton(string text) => new()
     {
         Text = text,
         Height = 38,
         Width = 120,
         Margin = new Padding(0, 0, 10, 0),
-        BackColor = Color.FromArgb(48, 58, 74),
-        ForeColor = Color.White,
+        BackColor = Theme.SurfaceStrong,
+        ForeColor = Theme.Text,
         FlatStyle = FlatStyle.Flat
     };
+
+    private static void StylePrimaryButton(Button button, string text)
+    {
+        button.Text = text;
+        button.Height = 38;
+        button.Width = 120;
+        button.Margin = new Padding(0, 0, 10, 0);
+        button.BackColor = Theme.Accent;
+        button.ForeColor = Theme.AccentText;
+        button.FlatStyle = FlatStyle.Flat;
+    }
 }

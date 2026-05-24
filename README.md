@@ -36,8 +36,10 @@ http://192.168.1.20:5178
 电脑端配置器：
 
 ```powershell
-dotnet run --project .\desktop\RemoteMediaPlayer.Desktop
+.\run-desktop.ps1
 ```
+
+Windows 也可以直接双击 `run-desktop.cmd`。macOS/Linux 可以运行 `sh ./run-desktop.sh`，不过当前桌面端基于 WinForms，实际图形界面主要面向 Windows。
 
 电脑端配置器只在本机运行，不通过网页暴露给手机或其他用户。普通用户可以在桌面窗口里点击“选择”添加媒体文件夹、设置手机端看到的显示名称、按需启用访问密码，然后点击“启动服务”。窗口右侧会显示可扫码二维码，手机和电脑在同一个 Wi-Fi 下时，直接用手机相机扫码即可打开播放端。
 
