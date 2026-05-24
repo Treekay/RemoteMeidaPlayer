@@ -11,6 +11,9 @@ internal sealed class AppConfig
     [JsonPropertyName("libraries")]
     public List<MediaLibrary> Libraries { get; set; } = [];
 
+    [JsonPropertyName("closeToTray")]
+    public bool CloseToTray { get; set; } = true;
+
     public static AppConfig Load(string path)
     {
         if (!File.Exists(path)) return Default();
@@ -26,6 +29,7 @@ internal sealed class AppConfig
 
     public static AppConfig Default() => new()
     {
+        CloseToTray = true,
         Libraries =
         [
             new MediaLibrary

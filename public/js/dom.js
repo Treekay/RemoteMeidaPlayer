@@ -17,6 +17,7 @@ export const els = {
   kindBadge: document.querySelector('#kindBadge'),
   nowTitle: document.querySelector('#nowTitle'),
   playlistButton: document.querySelector('#playlistButton'),
+  closePlayerButton: document.querySelector('#closePlayerButton'),
   playlist: document.querySelector('#playlist'),
   audio: document.querySelector('#audioPlayer'),
   video: document.querySelector('#videoPlayer'),

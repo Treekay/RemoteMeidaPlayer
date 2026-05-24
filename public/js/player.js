@@ -45,6 +45,22 @@ export function playNext(renderBrowser, renderPlaylist) {
   }
 }
 
+export function closeCurrentFile(renderBrowser, renderPlaylist) {
+  [els.audio, els.video].forEach((player) => {
+    player.pause();
+    player.hidden = true;
+    player.removeAttribute('src');
+    player.load();
+  });
+  state.activePath = '';
+  state.queueIndex = -1;
+  els.playlist.hidden = true;
+  els.playerDock.hidden = true;
+  els.nowTitle.textContent = '未选择文件 / No file selected';
+  renderBrowser();
+  renderPlaylist();
+}
+
 export async function previewItem(item) {
   const src = mediaSrc(state.activeLibraryId, item);
   els.previewTitle.textContent = item.name;

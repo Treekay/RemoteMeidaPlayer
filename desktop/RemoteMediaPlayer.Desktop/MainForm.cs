@@ -13,11 +13,14 @@ internal sealed class MainForm : Form
     private readonly ComboBox _accessChoices = new();
     private readonly PictureBox _qrImage = new();
     private readonly RoundedButton _serverButton = new();
+    private readonly CheckBox _runInBackground = new();
     private readonly Panel _scrollHost = new();
+    private readonly NotifyIcon _trayIcon = new();
     private TableLayoutPanel? _shell;
     private Control? _configPanel;
     private Control? _accessPanel;
     private bool _stackedLayout;
+    private bool _allowExit;
     private readonly ServerProcess _server = new();
     private AppConfig _config = AppConfig.Default();
 
@@ -35,6 +38,17 @@ internal sealed class MainForm : Form
 
     protected override void OnFormClosing(FormClosingEventArgs e)
     {
+        if (!_allowExit && _runInBackground.Checked)
+        {
+            e.Cancel = true;
+            Hide();
+            _trayIcon.Visible = true;
+            _trayIcon.ShowBalloonTip(1800, "Remote Media", "应用仍在后台运行 / Still running in background", ToolTipIcon.Info);
+            return;
+        }
+
+        _trayIcon.Visible = false;
+        _trayIcon.Dispose();
         _qrImage.Image?.Dispose();
         _server.Dispose();
         base.OnFormClosing(e);
@@ -56,9 +70,36 @@ internal sealed class MainForm : Form
         _scrollHost.Resize += (_, _) => ResizeShellToHost();
         _configPanel = BuildConfigPanel();
         _accessPanel = BuildAccessPanel();
+        BuildTrayIcon();
         _scrollHost.Controls.Add(_shell);
         Controls.Add(_scrollHost);
         ApplyResponsiveLayout();
+    }
+
+    private void BuildTrayIcon()
+    {
+        var menu = new ContextMenuStrip();
+        menu.Items.Add("显示窗口 / Show", null, (_, _) => ShowFromTray());
+        menu.Items.Add("退出 / Exit", null, (_, _) => ExitApplication());
+
+        _trayIcon.Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath) ?? SystemIcons.Application;
+        _trayIcon.Text = "Remote Media";
+        _trayIcon.ContextMenuStrip = menu;
+        _trayIcon.Visible = true;
+        _trayIcon.DoubleClick += (_, _) => ShowFromTray();
+    }
+
+    private void ShowFromTray()
+    {
+        Show();
+        WindowState = FormWindowState.Normal;
+        Activate();
+    }
+
+    private void ExitApplication()
+    {
+        _allowExit = true;
+        Close();
     }
 
     private Control BuildConfigPanel()
@@ -70,7 +111,7 @@ internal sealed class MainForm : Form
         layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
         layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 58));
         layout.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
-        layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 56));
+        layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 96));
         layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 36));
 
         layout.Controls.Add(Header(
@@ -112,6 +153,8 @@ internal sealed class MainForm : Form
         save.Click += (_, _) => SaveConfig();
         StylePrimaryButton(_serverButton, "启动服务 / Start", 150);
         _serverButton.Click += (_, _) => ToggleServer();
+        StyleTrayCheckBox();
+        actions.Controls.Add(_runInBackground);
         actions.Controls.Add(add);
         actions.Controls.Add(save);
         actions.Controls.Add(_serverButton);
@@ -208,6 +251,7 @@ internal sealed class MainForm : Form
     {
         _config = AppConfig.Load(ProjectPaths.ConfigPath);
         _publicUrl.Text = _config.PublicUrl;
+        _runInBackground.Checked = _config.CloseToTray;
         _libraryList.Controls.Clear();
         foreach (var library in _config.Libraries)
         {
@@ -220,6 +264,7 @@ internal sealed class MainForm : Form
     private void SaveConfig()
     {
         _config.PublicUrl = AccessAddress.Normalize(_publicUrl.Text);
+        _config.CloseToTray = _runInBackground.Checked;
         _config.Libraries = ReadLibraries();
         if (_config.Libraries.Count == 0)
         {
@@ -465,6 +510,18 @@ internal sealed class MainForm : Form
         textBox.BackColor = Theme.Input;
         textBox.ForeColor = Theme.Text;
         textBox.Margin = new Padding(0, 0, 10, 0);
+    }
+
+    private void StyleTrayCheckBox()
+    {
+        _runInBackground.Text = "关闭后后台运行 / Run in background";
+        _runInBackground.AutoSize = false;
+        _runInBackground.Width = 240;
+        _runInBackground.Height = 38;
+        _runInBackground.Margin = new Padding(0, 0, 10, 0);
+        _runInBackground.ForeColor = Theme.Text;
+        _runInBackground.BackColor = Theme.Surface;
+        _runInBackground.TextAlign = ContentAlignment.MiddleLeft;
     }
 
     private static RoundedButton SecondaryButton(string text, int width = 132) => new()

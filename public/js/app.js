@@ -1,7 +1,7 @@
 import { fetchJson, authHeaders } from './api.js';
 import { canEncryptInBrowser, encryptPassword } from './crypto.js';
 import { els } from './dom.js';
-import { openFileFromFolder, playNext, playQueueIndex } from './player.js';
+import { closeCurrentFile, openFileFromFolder, playNext, playQueueIndex } from './player.js';
 import {
   displayServer,
   renderBrowser,
@@ -149,6 +149,9 @@ function bindEvents() {
   els.refreshButton.addEventListener('click', () => loadFolder(state.path));
   els.playlistButton.addEventListener('click', () => {
     els.playlist.hidden = !els.playlist.hidden;
+  });
+  els.closePlayerButton.addEventListener('click', () => {
+    closeCurrentFile(renderCurrentBrowser, renderCurrentPlaylist);
   });
   els.previewClose.addEventListener('click', () => {
     els.previewDialog.close();
