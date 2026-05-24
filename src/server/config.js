@@ -1,4 +1,4 @@
-import { readFile, writeFile } from 'node:fs/promises';
+import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -16,63 +16,33 @@ export async function loadServerConfig() {
   const mediaRoot = path.resolve(process.env.MEDIA_ROOT || getArg('--media') || process.cwd());
   const explicitConfigPath = process.env.MEDIA_CONFIG || getArg('--config') || '';
   const configPath = explicitConfigPath ? path.resolve(explicitConfigPath) : defaultConfigPath;
-  const libraries = await loadLibraries(configPath, mediaRoot, Boolean(explicitConfigPath));
+  const appConfig = await loadAppConfig(configPath, Boolean(explicitConfigPath));
+  const libraries = loadLibraries(appConfig, mediaRoot);
 
-  return createRuntimeConfig({
+  return {
     port,
     host,
     mediaRoot,
+    publicUrl: normalizePublicUrl(appConfig.publicUrl),
     configPath,
     publicDir: path.join(projectRoot, 'public'),
-    libraries
-  });
-}
-
-export function createRuntimeConfig(config) {
-  return {
-    ...config,
-    libraryMap: new Map(config.libraries.map((library) => [library.id, library])),
-    replaceLibraries(nextLibraries) {
-      this.libraries = normalizeLibraries(nextLibraries, this.mediaRoot);
-      this.libraryMap = new Map(this.libraries.map((library) => [library.id, library]));
-    }
+    libraries,
+    libraryMap: new Map(libraries.map((library) => [library.id, library]))
   };
 }
 
-export async function saveLibraries(config, rawLibraries) {
-  const existingById = new Map(config.libraries.map((library) => [library.id, library]));
-  const merged = rawLibraries.map((library) => {
-    if (!library.keepPassword) return library;
-    const existing = existingById.get(String(library.id || ''));
-    return {
-      ...library,
-      password: existing?.password || '',
-      passwordHash: existing?.passwordHash || ''
-    };
-  });
-  config.replaceLibraries(merged);
-  const persisted = {
-    libraries: config.libraries.map((library) => ({
-      id: library.id,
-      name: library.name,
-      path: library.path,
-      ...(library.password ? { password: library.password } : {}),
-      ...(library.passwordHash ? { passwordHash: library.passwordHash } : {})
-    }))
-  };
-  await writeFile(config.configPath, `${JSON.stringify(persisted, null, 2)}\n`, 'utf8');
-  return config.libraries;
-}
-
-async function loadLibraries(configPath, mediaRoot, failOnMissingConfig) {
+async function loadAppConfig(configPath, failOnMissingConfig) {
   try {
-    const config = JSON.parse(await readFile(configPath, 'utf8'));
-    const libraries = normalizeLibraries(config.libraries || config.folders || [], mediaRoot);
-    if (libraries.length) return libraries;
+    return JSON.parse(await readFile(configPath, 'utf8'));
   } catch (error) {
     if (failOnMissingConfig && error.code !== 'ENOENT') throw error;
+    return {};
   }
+}
 
+function loadLibraries(appConfig, mediaRoot) {
+  const configured = normalizeLibraries(appConfig.libraries || appConfig.folders || [], mediaRoot);
+  if (configured.length) return configured;
   return normalizeLibraries(
     [
       {
@@ -118,4 +88,8 @@ function normalizeId(value) {
     .replace(/[^a-z0-9_-]+/g, '-')
     .replace(/^-+|-+$/g, '')
     .slice(0, 48);
+}
+
+function normalizePublicUrl(value) {
+  return String(value || '').trim().replace(/\/+$/, '');
 }

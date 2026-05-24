@@ -28,6 +28,5 @@ export async function serveStatic(req, res, publicDir, pathname) {
 
 function staticFilePath(pathname) {
   if (pathname === '/') return '/index.html';
-  if (pathname === '/setup') return '/setup.html';
   return pathname;
 }

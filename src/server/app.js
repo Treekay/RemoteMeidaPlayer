@@ -1,6 +1,6 @@
 import http from 'node:http';
 import { sendCorsPreflight, sendJson, sendText } from './http.js';
-import { chooseFolder, getHealth, getLibraries, getSetup, listFolder, saveSetup, unlockLibrary } from './routes.js';
+import { getHealth, getLibraries, listFolder, unlockLibrary } from './routes.js';
 import { serveStatic } from './static-files.js';
 import { streamMedia } from './media-stream.js';
 import { sendQrSvg } from './qr.js';
@@ -24,18 +24,6 @@ export function createServer(config, security) {
       const text = url.searchParams.get('text') || getHealth(config).access.primaryUrl;
       return sendQrSvg(res, text);
     }
-    if (req.method === 'GET' && url.pathname === '/api/setup') {
-      if (!isLocalRequest(req)) return sendText(res, 403, 'Setup is only available on this computer');
-      return sendJson(res, 200, getSetup(config));
-    }
-    if (req.method === 'POST' && url.pathname === '/api/setup') {
-      if (!isLocalRequest(req)) return sendText(res, 403, 'Setup is only available on this computer');
-      return saveSetup(req, res, config);
-    }
-    if (req.method === 'POST' && url.pathname === '/api/setup/pick-folder') {
-      if (!isLocalRequest(req)) return sendText(res, 403, 'Setup is only available on this computer');
-      return chooseFolder(req, res);
-    }
     if (req.method === 'POST' && url.pathname === '/api/unlock') {
       return unlockLibrary(req, res, config, security);
     }
@@ -49,9 +37,4 @@ export function createServer(config, security) {
 
     return sendText(res, 405, 'Method not allowed');
   });
-}
-
-function isLocalRequest(req) {
-  const address = req.socket.remoteAddress || '';
-  return address === '127.0.0.1' || address === '::1' || address === '::ffff:127.0.0.1';
 }

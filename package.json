@@ -8,8 +8,8 @@
     "start": "node server.js",
     "dev": "node server.js",
     "check": "npm run check:server && npm run check:client",
-    "check:server": "node --check server.js && node --check src/server/app.js && node --check src/server/config.js && node --check src/server/http.js && node --check src/server/libraries.js && node --check src/server/media-stream.js && node --check src/server/media-types.js && node --check src/server/qr.js && node --check src/server/routes.js && node --check src/server/security.js && node --check src/server/setup.js && node --check src/server/static-files.js",
-    "check:client": "node --check public/js/api.js && node --check public/js/app.js && node --check public/js/crypto.js && node --check public/js/dom.js && node --check public/js/icons.js && node --check public/js/player.js && node --check public/js/render.js && node --check public/js/setup.js && node --check public/js/state.js && node --check public/js/utils.js"
+    "check:server": "node --check server.js && node --check src/server/access.js && node --check src/server/app.js && node --check src/server/config.js && node --check src/server/http.js && node --check src/server/libraries.js && node --check src/server/media-stream.js && node --check src/server/media-types.js && node --check src/server/qr.js && node --check src/server/routes.js && node --check src/server/security.js && node --check src/server/static-files.js",
+    "check:client": "node --check public/js/api.js && node --check public/js/app.js && node --check public/js/crypto.js && node --check public/js/dom.js && node --check public/js/icons.js && node --check public/js/player.js && node --check public/js/render.js && node --check public/js/state.js && node --check public/js/utils.js"
   },
   "engines": {
     "node": ">=18"

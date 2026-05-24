@@ -1,9 +1,7 @@
 const CACHE_NAME = 'remote-media-player-v3';
 const APP_SHELL = [
   '/',
-  '/setup',
   '/index.html',
-  '/setup.html',
   '/styles.css',
   '/js/api.js',
   '/js/app.js',
@@ -13,7 +11,6 @@ const APP_SHELL = [
   '/js/player.js',
   '/js/render.js',
   '/js/state.js',
-  '/js/setup.js',
   '/js/utils.js',
   '/manifest.webmanifest',
   '/icon.svg'
