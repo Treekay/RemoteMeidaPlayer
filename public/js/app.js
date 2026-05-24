@@ -1,5 +1,5 @@
 import { adminHeaders, authHeaders, fetchJson } from './api.js';
-import { canEncryptInBrowser, encryptPassword } from './crypto.js';
+import { canEncryptInBrowser, canUsePlainPasswordFallback, encryptPassword } from './crypto.js';
 import { els } from './dom.js';
 import { closeCurrentFile, openFileFromFolder, playNext, playQueueIndex } from './player.js';
 import {
@@ -49,23 +49,22 @@ async function openAdmin() {
 }
 
 async function unlockAdmin() {
-  if (!canEncryptInBrowser()) {
-    els.adminLoginHint.textContent = '当前页面不支持浏览器加密能力，请用 HTTPS 访问。/ Browser encryption is unavailable. Use HTTPS.';
-    return;
-  }
-  if (!els.adminPasswordInput.value) {
+  const password = els.adminPasswordInput.value;
+  if (!password) {
     els.adminLoginHint.textContent = '请输入管理员密码 / Enter the admin password.';
     return;
   }
+  if (!canEncryptInBrowser() && !canUsePlainPasswordFallback()) {
+    els.adminLoginHint.textContent = '当前页面不能加密密码。请使用 HTTPS，或只在局域网 IP 下访问。/ Use HTTPS, or open from a private LAN address.';
+    return;
+  }
   els.adminUnlockButton.disabled = true;
-  els.adminLoginHint.textContent = '正在验证... / Verifying...';
+  els.adminLoginHint.textContent = canEncryptInBrowser() ? '正在加密并验证... / Encrypting and verifying...' : '局域网明文验证中... / Verifying over private LAN...';
   try {
-    const keyInfo = await fetchJson('/api/crypto-key');
-    const encryptedPassword = await encryptPassword(els.adminPasswordInput.value, keyInfo.publicKey);
     const data = await fetchJson('/api/admin/unlock', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ keyId: keyInfo.keyId, encryptedPassword })
+      body: JSON.stringify(await passwordPayload(password))
     });
     setAdminToken(data.token);
     await loadAdminConfig();
@@ -232,28 +231,25 @@ function renderCurrentPlaylist() {
 async function unlockPendingLibrary() {
   const library = state.pendingUnlock;
   if (!library) return;
-  if (!canEncryptInBrowser()) {
-    els.passwordHint.textContent = '当前页面不支持浏览器加密能力。请用 HTTPS 访问服务端后再解锁。Browser encryption is unavailable. Use HTTPS to unlock.';
-    return;
-  }
   const password = els.passwordInput.value;
   if (!password) {
     els.passwordHint.textContent = '请输入密码 / Enter the password.';
     return;
   }
+  if (!canEncryptInBrowser() && !canUsePlainPasswordFallback()) {
+    els.passwordHint.textContent = '当前页面不能加密密码。请使用 HTTPS，或只在局域网 IP 下访问。/ Use HTTPS, or open from a private LAN address.';
+    return;
+  }
 
   els.unlockButton.disabled = true;
-  els.passwordHint.textContent = '正在加密并验证... / Encrypting and verifying...';
+  els.passwordHint.textContent = canEncryptInBrowser() ? '正在加密并验证... / Encrypting and verifying...' : '局域网明文验证中... / Verifying over private LAN...';
   try {
-    const keyInfo = await fetchJson('/api/crypto-key');
-    const encryptedPassword = await encryptPassword(password, keyInfo.publicKey);
     const data = await fetchJson('/api/unlock', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         libraryId: library.id,
-        keyId: keyInfo.keyId,
-        encryptedPassword
+        ...(await passwordPayload(password))
       })
     });
     setToken(library.id, data.token);
@@ -265,6 +261,13 @@ async function unlockPendingLibrary() {
   } finally {
     els.unlockButton.disabled = false;
   }
+}
+
+async function passwordPayload(password) {
+  if (!canEncryptInBrowser()) return { plainPassword: password };
+  const keyInfo = await fetchJson('/api/crypto-key');
+  const encryptedPassword = await encryptPassword(password, keyInfo.publicKey);
+  return { keyId: keyInfo.keyId, encryptedPassword };
 }
 
 function bindEvents() {

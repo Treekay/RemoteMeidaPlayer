@@ -121,6 +121,10 @@ This prevents the password from appearing as plaintext in the request body. If e
 
 这可以避免密码以明文出现在请求体中。如果把服务暴露到不可信网络，请使用 HTTPS，防止中间人替换公钥。
 
+When opened from a private LAN address over HTTP, browsers may block WebCrypto. In that case, the app allows a plaintext password fallback only for localhost/private-network requests. Public-network HTTP still requires browser encryption or HTTPS.
+
+使用内网 IP 的 HTTP 地址访问时，浏览器可能会禁用 WebCrypto。此时应用只允许 localhost/局域网请求降级为明文密码提交；公网 HTTP 仍然需要浏览器加密能力或 HTTPS。
+
 ## Features / 功能
 
 - Desktop-only configuration app.

@@ -32,7 +32,7 @@ export async function unlockAdmin(req, res, config, security) {
   try {
     if (!config.adminLocked) return sendJson(res, 403, { error: '管理员密码未启用 / Admin password is not enabled' });
     const body = await readJsonBody(req);
-    const password = security.decryptPassword(body.encryptedPassword, body.keyId);
+    const password = readSubmittedPassword(req, body, security);
     if (password !== config.adminPassword) {
       return sendJson(res, 401, { error: '管理员密码不正确 / Incorrect admin password' });
     }
@@ -88,7 +88,7 @@ export async function unlockLibrary(req, res, config, security) {
     if (!library) return sendJson(res, 404, { error: '媒体库不存在' });
     if (!library.locked) return sendJson(res, 200, { token: security.createToken(library.id) });
 
-    const password = security.decryptPassword(body.encryptedPassword, body.keyId);
+    const password = readSubmittedPassword(req, body, security);
     if (!verifyPassword(library, password)) {
       return sendJson(res, 401, { error: '密码不正确' });
     }
@@ -143,4 +143,29 @@ function normalizeAdminLibraries(rawLibraries, previous) {
       };
     })
     .filter((library) => library.path);
+}
+
+function readSubmittedPassword(req, body, security) {
+  if (body.encryptedPassword) return security.decryptPassword(body.encryptedPassword, body.keyId);
+  if (body.plainPassword && allowsPlainPassword(req)) return String(body.plainPassword);
+  const error = new Error('当前连接不能明文提交密码，请使用 HTTPS 或局域网地址 / Plain password is only allowed on private LAN addresses');
+  error.status = 400;
+  throw error;
+}
+
+function allowsPlainPassword(req) {
+  const host = String(req.headers.host || '').replace(/:\d+$/, '').replace(/^\[|\]$/g, '');
+  const remote = String(req.socket.remoteAddress || '').replace(/^::ffff:/, '').replace(/^\[|\]$/g, '');
+  return isPrivateHost(host) && isPrivateHost(remote);
+}
+
+function isPrivateHost(host) {
+  const value = String(host || '').toLowerCase();
+  if (value === 'localhost' || value.endsWith('.local')) return true;
+  if (value === '::1' || value === '0:0:0:0:0:0:0:1') return true;
+  if (value.startsWith('fc') || value.startsWith('fd') || value.startsWith('fe80:')) return true;
+  const parts = value.split('.').map(Number);
+  if (parts.length !== 4 || parts.some((part) => !Number.isInteger(part))) return false;
+  const [a, b] = parts;
+  return a === 10 || a === 127 || (a === 192 && b === 168) || (a === 172 && b >= 16 && b <= 31) || (a === 169 && b === 254);
 }
