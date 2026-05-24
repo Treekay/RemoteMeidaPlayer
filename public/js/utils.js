@@ -11,8 +11,8 @@ export function formatBytes(bytes) {
 }
 
 export function kindText(item) {
-  if (item.type === 'folder') return '文件夹';
-  return item.kind === 'video' ? '视频' : '音频';
+  if (item.type === 'folder') return '文件夹 / Folder';
+  return item.kind === 'video' ? '视频 / Video' : '音频 / Audio';
 }
 
 export function escapeHtml(value) {

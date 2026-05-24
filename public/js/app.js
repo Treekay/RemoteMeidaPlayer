@@ -28,9 +28,9 @@ async function loadLibraries() {
   } catch (error) {
     state.libraries = [];
     state.items = [];
-    els.libraryHint.textContent = '连接失败';
+    els.libraryHint.textContent = '连接失败 / Connection failed';
     els.libraryTabs.innerHTML = '';
-    renderError('无法连接服务器', `${error.message}。请确认服务端已启动，手机和电脑在同一网络。`);
+    renderError('无法连接服务端 / Cannot connect to server', `${error.message}. 请确认电脑端服务已启动，并且手机和电脑在同一网络 / Make sure the desktop service is running and both devices are on the same network.`);
   }
 }
 
@@ -68,7 +68,7 @@ async function loadFolder(nextPath = state.path) {
       if (library) showPasswordDialog(library);
       return;
     }
-    renderError('无法读取媒体库', error.message);
+    renderError('无法读取媒体库 / Cannot read library', error.message);
   }
 }
 
@@ -92,17 +92,17 @@ async function unlockPendingLibrary() {
   const library = state.pendingUnlock;
   if (!library) return;
   if (!canEncryptInBrowser()) {
-    els.passwordHint.textContent = '当前页面不支持浏览器加密能力。请用 HTTPS 访问服务端后再解锁。';
+    els.passwordHint.textContent = '当前页面不支持浏览器加密能力。请用 HTTPS 访问服务端后再解锁。Browser encryption is unavailable. Use HTTPS to unlock.';
     return;
   }
   const password = els.passwordInput.value;
   if (!password) {
-    els.passwordHint.textContent = '请输入密码。';
+    els.passwordHint.textContent = '请输入密码 / Enter the password.';
     return;
   }
 
   els.unlockButton.disabled = true;
-  els.passwordHint.textContent = '正在加密并验证...';
+  els.passwordHint.textContent = '正在加密并验证... / Encrypting and verifying...';
   try {
     const keyInfo = await fetchJson('/api/crypto-key');
     const encryptedPassword = await encryptPassword(password, keyInfo.publicKey);
@@ -120,7 +120,7 @@ async function unlockPendingLibrary() {
     state.pendingUnlock = null;
     await openLibrary(library.id);
   } catch (error) {
-    els.passwordHint.textContent = error.message || '解锁失败，请重试。';
+    els.passwordHint.textContent = error.message || '解锁失败，请重试 / Unlock failed. Try again.';
   } finally {
     els.unlockButton.disabled = false;
   }

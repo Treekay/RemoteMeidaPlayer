@@ -1,6 +1,6 @@
 namespace RemoteMediaPlayer.Desktop;
 
-internal sealed class LibraryEditor : UserControl
+internal sealed class LibraryEditor : RoundedPanel
 {
     private readonly TextBox _name = new();
     private readonly TextBox _path = new();
@@ -12,6 +12,7 @@ internal sealed class LibraryEditor : UserControl
     public LibraryEditor(MediaLibrary library)
     {
         LibraryId = string.IsNullOrWhiteSpace(library.Id) ? $"library-{Guid.NewGuid():N}" : library.Id;
+        Radius = 10;
         BuildUi();
         _name.Text = library.Name;
         _path.Text = library.Path;
@@ -35,56 +36,54 @@ internal sealed class LibraryEditor : UserControl
 
     private void BuildUi()
     {
-        Height = 166;
-        Margin = new Padding(0, 0, 0, 12);
+        Height = 148;
+        Margin = new Padding(0, 0, 0, 14);
         Padding = new Padding(16);
         BackColor = Theme.SurfaceAlt;
 
         var root = new TableLayoutPanel
         {
             Dock = DockStyle.Fill,
-            ColumnCount = 3,
-            RowCount = 5,
+            ColumnCount = 4,
+            RowCount = 4,
             BackColor = Theme.SurfaceAlt
         };
-        root.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 38));
-        root.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 62));
-        root.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 92));
+        root.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33));
+        root.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 67));
+        root.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 104));
+        root.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 96));
         root.RowStyles.Add(new RowStyle(SizeType.Absolute, 24));
         root.RowStyles.Add(new RowStyle(SizeType.Absolute, 38));
-        root.RowStyles.Add(new RowStyle(SizeType.Absolute, 14));
-        root.RowStyles.Add(new RowStyle(SizeType.Absolute, 30));
-        root.RowStyles.Add(new RowStyle(SizeType.Absolute, 38));
+        root.RowStyles.Add(new RowStyle(SizeType.Absolute, 12));
+        root.RowStyles.Add(new RowStyle(SizeType.Absolute, 40));
 
-        root.Controls.Add(Label("显示名称"), 0, 0);
-        root.Controls.Add(Label("文件夹"), 1, 0);
+        root.Controls.Add(Label("显示名称 / Display name"), 0, 0);
+        root.Controls.Add(Label("文件夹 / Folder"), 1, 0);
 
-        var remove = SecondaryButton("删除");
+        var choose = SecondaryButton("选择 / Pick");
+        choose.Click += (_, _) => ChooseFolder();
+        var remove = SecondaryButton("删除 / Delete");
         remove.Click += (_, _) => RemoveRequested?.Invoke(this, EventArgs.Empty);
-        root.Controls.Add(remove, 2, 0);
-        root.SetRowSpan(remove, 2);
 
-        StyleTextBox(_name, "例如：客厅音乐");
-        StyleTextBox(_path, "选择或粘贴文件夹路径");
-        StyleTextBox(_password, "访问密码");
+        StyleTextBox(_name, "例如：客厅音乐 / e.g. Living Room Music");
+        StyleTextBox(_path, "选择或粘贴文件夹路径 / Pick or paste a folder path");
+        StyleTextBox(_password, "访问密码 / Password");
         _password.UseSystemPasswordChar = true;
 
         root.Controls.Add(_name, 0, 1);
         root.Controls.Add(_path, 1, 1);
+        root.Controls.Add(choose, 2, 1);
+        root.Controls.Add(remove, 3, 1);
 
-        var choose = SecondaryButton("选择");
-        choose.Click += (_, _) => ChooseFolder();
-        root.Controls.Add(choose, 2, 4);
-
-        _locked.Text = "需要密码才能打开";
+        _locked.Text = "需要密码才能打开 / Require password";
         _locked.ForeColor = Theme.Text;
         _locked.AutoSize = true;
-        _locked.Margin = new Padding(0, 0, 0, 0);
+        _locked.Margin = new Padding(0, 8, 0, 0);
         _locked.CheckedChanged += (_, _) => _password.Visible = _locked.Checked;
         root.Controls.Add(_locked, 0, 3);
-        root.SetColumnSpan(_locked, 3);
+        root.SetColumnSpan(_locked, 2);
 
-        root.Controls.Add(_password, 0, 4);
+        root.Controls.Add(_password, 2, 3);
         root.SetColumnSpan(_password, 2);
 
         Controls.Add(root);
@@ -94,7 +93,7 @@ internal sealed class LibraryEditor : UserControl
     {
         using var dialog = new FolderBrowserDialog
         {
-            Description = "选择要在手机上播放的媒体文件夹",
+            Description = "选择要在手机上播放的媒体文件夹 / Choose a media folder for phone playback",
             UseDescriptionForTitle = true
         };
         if (dialog.ShowDialog(this) != DialogResult.OK) return;
@@ -108,7 +107,7 @@ internal sealed class LibraryEditor : UserControl
     private string FallbackName(int index)
     {
         if (!string.IsNullOrWhiteSpace(_path.Text)) return new DirectoryInfo(_path.Text).Name;
-        return $"媒体库 {index + 1}";
+        return $"媒体库 {index + 1} / Library {index + 1}";
     }
 
     private static Label Label(string text) => new()
@@ -129,13 +128,13 @@ internal sealed class LibraryEditor : UserControl
         textBox.Margin = new Padding(0, 0, 10, 0);
     }
 
-    private static Button SecondaryButton(string text) => new()
+    private static RoundedButton SecondaryButton(string text) => new()
     {
         Text = text,
         Dock = DockStyle.Fill,
         BackColor = Theme.SurfaceStrong,
         ForeColor = Theme.Text,
-        FlatStyle = FlatStyle.Flat,
-        Margin = new Padding(0, 0, 0, 0)
+        Margin = new Padding(0, 0, 8, 0),
+        Radius = 8
     };
 }

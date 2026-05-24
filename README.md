@@ -1,53 +1,84 @@
-# Remote Media Player
+# Remote Media Player / 远程媒体播放器
 
-一个面向手机浏览器的局域网媒体播放器。服务端把电脑或服务器上的指定文件夹配置成“媒体库”，手机打开网页后可以选择媒体库、浏览子文件夹，并在应用内播放音乐或视频。
+Remote Media Player is a local-network media player for phones. The desktop app configures folders on your PC, starts the media service, and shows a QR code. Your phone scans the code, browses the configured libraries, and plays music or video in the browser.
 
-## 启动
+Remote Media Player 是一个面向手机浏览器的局域网媒体播放器。电脑端应用负责配置本机文件夹、启动媒体服务并显示二维码；手机扫码后即可浏览媒体库并播放音乐或视频。
 
-单个文件夹可以直接启动：
+## Quick Start / 快速启动
 
-```powershell
-npm start -- --media "D:\Music" --port 5178
-```
+Run the desktop configuration app:
 
-也可以用环境变量：
-
-```powershell
-$env:MEDIA_ROOT="D:\Music"
-$env:MEDIA_NAME="我的音乐"
-$env:MEDIA_PASSWORD="可选密码"
-npm start
-```
-
-启动后，在手机浏览器打开电脑的局域网 IP：
-
-```text
-http://你的电脑IP:5178
-```
-
-例如：
-
-```text
-http://192.168.1.20:5178
-```
-
-手机和电脑需要在同一个局域网内。Windows 防火墙如果弹窗，请允许 Node.js 在专用网络中通信。
-
-电脑端配置器：
+运行电脑端配置器：
 
 ```powershell
 .\run-desktop.ps1
 ```
 
-Windows 也可以直接双击 `run-desktop.cmd`。macOS/Linux 可以运行 `sh ./run-desktop.sh`，不过当前桌面端基于 WinForms，实际图形界面主要面向 Windows。
+On Windows, you can also double-click `run-desktop.cmd`.
 
-电脑端配置器只在本机运行，不通过网页暴露给手机或其他用户。普通用户可以在桌面窗口里点击“选择”添加媒体文件夹、设置手机端看到的显示名称、按需启用访问密码，然后点击“启动服务”。窗口右侧会显示可扫码二维码，手机和电脑在同一个 Wi-Fi 下时，直接用手机相机扫码即可打开播放端。
+Windows 也可以直接双击 `run-desktop.cmd`。
 
-如果配置了公网访问地址，二维码会使用公网地址；如果没有配置，则自动使用局域网地址。后续如果加入远程登录或服务器配对，也可以复用同一个二维码接口生成登录链接。
+The desktop app only runs locally. It is not exposed as a web setup page, so phones and other users cannot modify server settings from the browser.
 
-## 多媒体库配置
+电脑端配置器只在本机运行，不通过网页暴露配置入口，因此手机或其他用户不能在浏览器里修改服务端设置。
 
-复制 `media.config.example.json`，按需修改成自己的配置：
+## Desktop Workflow / 电脑端流程
+
+1. Add one or more media folders.
+2. Set the display name shown on phones.
+3. Optionally enable a password for a library.
+4. Optionally set a public URL, such as `https://media.example.com`.
+5. Start the service.
+6. Scan the QR code with your phone.
+
+1. 添加一个或多个媒体文件夹。
+2. 设置手机端看到的显示名称。
+3. 按需为媒体库启用访问密码。
+4. 可选填写公网访问地址，例如 `https://media.example.com`。
+5. 启动服务。
+6. 用手机扫码访问。
+
+If a public URL is configured, the QR code uses that public URL. Otherwise, it automatically uses the best local-network IP address.
+
+如果配置了公网访问地址，二维码会使用公网地址；如果没有配置，则自动选择最合适的局域网 IP。
+
+If scanning does not open the page, check that:
+
+如果扫码打不开页面，请确认：
+
+- The desktop service is started.
+- Phone and PC are on the same Wi-Fi or reachable network.
+- Windows Firewall allows Node.js on private networks.
+- The shown IP address belongs to the same network as your phone.
+
+- 电脑端服务已经启动。
+- 手机和电脑在同一个 Wi-Fi 或互相可达的网络中。
+- Windows 防火墙允许 Node.js 在专用网络中通信。
+- 二维码里的 IP 地址和手机处在同一网段。
+
+## Manual Server Mode / 手动服务模式
+
+You can still start the Node service manually for server deployments:
+
+如果要部署到服务器，也可以手动启动 Node 服务：
+
+```powershell
+npm start -- --config ".\media.config.json" --port 5178
+```
+
+Single-folder mode:
+
+单文件夹模式：
+
+```powershell
+npm start -- --media "D:\Music" --port 5178
+```
+
+## Configuration / 配置文件
+
+Example `media.config.json`:
+
+示例 `media.config.json`：
 
 ```json
 {
@@ -55,12 +86,12 @@ Windows 也可以直接双击 `run-desktop.cmd`。macOS/Linux 可以运行 `sh .
   "libraries": [
     {
       "id": "music",
-      "name": "客厅音乐",
+      "name": "Living Room Music / 客厅音乐",
       "path": "D:\\Music"
     },
     {
       "id": "movies",
-      "name": "电影收藏",
+      "name": "Movies / 电影收藏",
       "path": "E:\\Videos",
       "password": "change-this-password"
     }
@@ -68,58 +99,85 @@ Windows 也可以直接双击 `run-desktop.cmd`。macOS/Linux 可以运行 `sh .
 }
 ```
 
-启动时传入配置文件：
+The phone UI only receives `name`; local folder paths are never exposed through the library list.
 
-```powershell
-npm start -- --config ".\media.config.json" --port 5178
-```
+手机端只会看到 `name`，不会在媒体库列表里看到电脑上的真实文件夹路径。
 
-前端只会看到 `name`，不会暴露真实文件夹路径。`password` 存在时，该媒体库需要先解锁才能浏览和播放。
+You may use `passwordHash` instead of `password`. The hash value is a SHA-256 hex digest.
 
-也可以把 `password` 换成 `passwordHash`，值为密码的 SHA-256 十六进制摘要，这样配置文件里不保存明文密码。
+也可以使用 `passwordHash` 替代 `password`，值为密码的 SHA-256 十六进制摘要。
 
-## 密码传输
+## Password Security / 密码安全
 
-前端解锁时会先请求服务端临时 RSA 公钥，然后用浏览器 Web Crypto 的 `RSA-OAEP + SHA-256` 加密密码，再发送到 `/api/unlock`。服务端解密并验证成功后返回临时播放令牌。
+When unlocking a protected library, the phone first requests a temporary RSA public key, encrypts the password with `RSA-OAEP + SHA-256`, and sends it to `/api/unlock`. The service returns a temporary playback token after verification.
 
-注意：这能避免密码以明文出现在请求体里，但如果你把服务暴露到不可信网络，仍应在反向代理或本机证书后使用 HTTPS，防止中间人替换公钥。
+解锁受保护媒体库时，手机端会先请求临时 RSA 公钥，再使用 `RSA-OAEP + SHA-256` 加密密码并发送到 `/api/unlock`。验证成功后，服务端返回临时播放令牌。
 
-## 功能
+This prevents the password from appearing as plaintext in the request body. If exposing the service to untrusted networks, use HTTPS to prevent public-key replacement by a middleman.
 
-- 展示服务端配置的多个媒体库名称
-- 支持媒体库访问密码
-- 浏览子文件夹，只显示可播放媒体和文件夹
-- 应用内播放音频和视频
-- 根据当前文件夹自动生成播放列表，当前曲目结束后自动播放下一项
-- 支持 HTTP Range，便于拖动进度条和播放大文件
-- 支持移动端布局和 PWA 安装
+这可以避免密码以明文出现在请求体中。如果把服务暴露到不可信网络，请使用 HTTPS，防止中间人替换公钥。
 
-## 支持格式
+## Features / 功能
 
-音频：`mp3`、`m4a`、`aac`、`flac`、`wav`、`ogg`、`opus`、`webm`
+- Desktop-only configuration app.
+- QR code connection for phones.
+- Public URL first, local-network IP fallback.
+- Multiple media libraries.
+- Optional per-library password.
+- Folder browsing.
+- Built-in audio/video playback.
+- Current-folder playlist with auto-next playback.
+- HTTP Range support for seeking and large files.
+- Mobile layout and PWA support.
 
-视频：`mp4`、`m4v`、`mov`、`webm`、`mkv`、`avi`
+- 电脑端本机配置器。
+- 手机扫码连接。
+- 优先使用公网访问地址，没有配置则使用局域网 IP。
+- 支持多个媒体库。
+- 支持按媒体库设置访问密码。
+- 支持文件夹浏览。
+- 支持应用内音频/视频播放。
+- 根据当前文件夹生成播放列表，并自动播放下一项。
+- 支持 HTTP Range，便于拖动进度条和播放大文件。
+- 支持移动端布局和 PWA 安装。
 
-浏览器是否能直接播放某个编码，取决于手机浏览器自身支持情况。通常 `mp4`、`mp3`、`m4a` 兼容性最好。
+## Supported Formats / 支持格式
+
+Audio / 音频：`mp3`、`m4a`、`aac`、`flac`、`wav`、`ogg`、`opus`、`webm`
+
+Video / 视频：`mp4`、`m4v`、`mov`、`webm`、`mkv`、`avi`
+
+Actual playback support depends on the phone browser and codecs. `mp4`, `mp3`, and `m4a` usually work best.
+
+实际能否播放取决于手机浏览器和编码支持。通常 `mp4`、`mp3`、`m4a` 兼容性最好。
 
 ## API
 
-- `GET /api/health` 查看服务状态和媒体库摘要
-- `GET /api/libraries` 获取前端可见媒体库
-- `GET /api/crypto-key` 获取临时 RSA 公钥
+- `GET /api/health` service status, access URL, and library summary
+- `GET /api/libraries` visible library list for the phone UI
+- `GET /api/crypto-key` temporary RSA public key
+- `POST /api/unlock` unlock a protected library
+- `GET /api/list?library=<id>&path=<path>` list a library folder
+- `GET /media/<libraryId>/<path>` stream media
+- `GET /api/qr?text=<url>` generate QR SVG for a URL or pairing link
+
+- `GET /api/health` 服务状态、访问地址和媒体库摘要
+- `GET /api/libraries` 手机端可见媒体库列表
+- `GET /api/crypto-key` 临时 RSA 公钥
 - `POST /api/unlock` 解锁受保护媒体库
 - `GET /api/list?library=<id>&path=<path>` 列出媒体库目录
-- `GET /media/<libraryId>/<path>` 流式播放指定媒体文件
+- `GET /media/<libraryId>/<path>` 流式播放媒体文件
+- `GET /api/qr?text=<url>` 为访问地址或配对链接生成二维码 SVG
 
-## 项目结构
+## Project Structure / 项目结构
 
 ```text
-server.js                 # 服务端启动入口
-src/server/               # 服务端模块：配置、路由、加密、媒体库、流式播放、静态文件
-public/index.html         # 前端页面外壳
-public/styles.css         # 前端样式
-public/js/                # 前端模块：状态、API、渲染、播放器、密码加密
-public/sw.js              # PWA 静态资源缓存
-desktop/                  # C#/.NET 电脑端配置器
-media.config.example.json # 多媒体库配置示例
+server.js                 # Node service entry / Node 服务入口
+src/server/               # Service modules / 服务端模块
+public/index.html         # Phone web app shell / 手机端页面
+public/styles.css         # Phone web app styles / 手机端样式
+public/js/                # Phone web app modules / 手机端模块
+public/sw.js              # PWA cache worker / PWA 缓存
+desktop/                  # C#/.NET desktop config app / C#/.NET 电脑端配置器
+media.config.example.json # Example config / 配置示例
 ```

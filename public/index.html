@@ -17,46 +17,46 @@
           </span>
           <div>
             <h1>Remote Media</h1>
-            <p id="serverLabel">连接当前服务器</p>
+            <p id="serverLabel">已连接电脑端 / Connected to desktop</p>
           </div>
         </div>
-        <button class="icon-button" id="settingsButton" type="button" aria-label="服务器设置" title="服务器设置">
+        <button class="icon-button" id="settingsButton" type="button" aria-label="服务器设置 / Server settings" title="服务器设置 / Server settings">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06A1.7 1.7 0 0 0 15 19.4a1.7 1.7 0 0 0-1 .6 1.7 1.7 0 0 0-.4 1.1V21a2 2 0 1 1-4 0v-.09A1.7 1.7 0 0 0 8.6 19.4a1.7 1.7 0 0 0-1.88.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-.6-1 1.7 1.7 0 0 0-1.1-.4H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.6 8.6a1.7 1.7 0 0 0-.34-1.88l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-.6 1.7 1.7 0 0 0 .4-1.1V3a2 2 0 1 1 4 0v.09A1.7 1.7 0 0 0 15.4 4.6a1.7 1.7 0 0 0 1.88-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.4 9c.16.38.46.7.85.9.24.13.5.2.78.2H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.51.9Z"/></svg>
         </button>
       </header>
 
       <section class="mobile-hero">
         <div>
-          <h2>手机里的私人影音库</h2>
-          <p>选择电脑端开放的媒体库，浏览文件夹，然后直接播放。</p>
+          <h2>手机里的私人影音库 / Your Private Media Library</h2>
+          <p>选择电脑端开放的媒体库，浏览文件夹，然后直接播放。 Pick a shared library, browse folders, and play instantly.</p>
         </div>
-        <span class="setup-link">扫码连接</span>
+        <span class="setup-link">扫码连接 / Scan to connect</span>
       </section>
 
       <section class="connect-panel" id="connectPanel" hidden>
-        <label for="serverInput">服务器地址</label>
+        <label for="serverInput">服务器地址 / Server URL</label>
         <div class="input-row">
-          <input id="serverInput" inputmode="url" autocomplete="url" placeholder="例如 http://192.168.1.20:5178" />
-          <button id="connectButton" type="button">连接</button>
+          <input id="serverInput" inputmode="url" autocomplete="url" placeholder="例如 / e.g. http://192.168.1.20:5178" />
+          <button id="connectButton" type="button">连接 / Connect</button>
         </div>
-        <p>留空会使用当前页面所在服务器。连接另一台电脑时，填写它在局域网里的访问地址。</p>
+        <p>留空会使用当前页面所在服务器。Leave it empty to use the current server.</p>
       </section>
 
       <section class="library-panel raised-panel">
         <div class="section-head">
           <div>
-            <h2>媒体库</h2>
-            <p id="libraryHint">选择一个服务端开放的文件夹</p>
+            <h2>媒体库 / Libraries</h2>
+            <p id="libraryHint">选择一个服务端开放的文件夹 / Choose a shared folder</p>
           </div>
-          <button class="ghost-button" id="refreshLibrariesButton" type="button">刷新</button>
+          <button class="ghost-button" id="refreshLibrariesButton" type="button">刷新 / Refresh</button>
         </div>
-        <div class="library-tabs" id="libraryTabs" aria-label="媒体库列表"></div>
+        <div class="library-tabs" id="libraryTabs" aria-label="媒体库列表 / Library list"></div>
       </section>
 
-      <nav class="pathbar" aria-label="文件路径">
+      <nav class="pathbar" aria-label="文件路径 / File path">
         <button id="backButton" type="button" disabled>
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>
-          返回
+          返回 / Back
         </button>
         <span id="pathLabel">/</span>
       </nav>
@@ -64,10 +64,10 @@
       <section class="content-panel raised-panel">
         <div class="section-head">
           <div>
-            <h2 id="folderTitle">文件</h2>
-            <p id="countLabel">正在读取...</p>
+            <h2 id="folderTitle">文件 / Files</h2>
+            <p id="countLabel">正在读取... / Loading...</p>
           </div>
-          <button class="ghost-button" id="refreshButton" type="button">刷新</button>
+          <button class="ghost-button" id="refreshButton" type="button">刷新 / Refresh</button>
         </div>
         <div class="browser-list" id="browserList" aria-live="polite"></div>
       </section>
@@ -75,9 +75,9 @@
 
     <aside class="player-dock" id="playerDock" hidden>
       <div class="now-playing">
-        <span id="kindBadge">音频</span>
-        <strong id="nowTitle">未选择文件</strong>
-        <button class="icon-button small" id="playlistButton" type="button" aria-label="播放列表" title="播放列表">
+        <span id="kindBadge">音频 / Audio</span>
+        <strong id="nowTitle">未选择文件 / No file selected</strong>
+        <button class="icon-button small" id="playlistButton" type="button" aria-label="播放列表 / Playlist" title="播放列表 / Playlist">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
         </button>
       </div>
@@ -89,15 +89,15 @@
     <dialog class="password-dialog" id="passwordDialog">
       <form method="dialog" id="passwordForm">
         <div class="dialog-head">
-          <h2 id="passwordTitle">需要密码</h2>
-          <button class="icon-button small" value="cancel" type="submit" aria-label="关闭" title="关闭">
+          <h2 id="passwordTitle">需要密码 / Password Required</h2>
+          <button class="icon-button small" value="cancel" type="submit" aria-label="关闭 / Close" title="关闭 / Close">
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
           </button>
         </div>
-        <p id="passwordHint">密码会在浏览器中加密后发送到服务端。</p>
-        <label for="passwordInput">访问密码</label>
+        <p id="passwordHint">密码会在浏览器中加密后发送到服务端。Your password is encrypted in the browser before sending.</p>
+        <label for="passwordInput">访问密码 / Access password</label>
         <input id="passwordInput" type="password" autocomplete="current-password" />
-        <button class="primary-button" id="unlockButton" type="submit" value="default">解锁</button>
+        <button class="primary-button" id="unlockButton" type="submit" value="default">解锁 / Unlock</button>
       </form>
     </dialog>
 
