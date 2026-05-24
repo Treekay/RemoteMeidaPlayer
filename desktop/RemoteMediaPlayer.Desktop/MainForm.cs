@@ -5,7 +5,7 @@ namespace RemoteMediaPlayer.Desktop;
 internal sealed class MainForm : Form
 {
     private const int Port = 5178;
-    private const int StackedLayoutBreakpoint = 1180;
+    private const int StackedLayoutBreakpoint = 1380;
     private readonly FlowLayoutPanel _libraryList = new();
     private readonly TextBox _publicUrl = new();
     private readonly Label _status = new();
@@ -72,7 +72,8 @@ internal sealed class MainForm : Form
 
         layout.Controls.Add(Header(
             "电脑端设置 / Desktop Setup",
-            "选择要共享的媒体文件夹。手机端只会看到显示名称，不会看到电脑里的真实路径。\nChoose folders to share. Phones only see display names, never local paths."), 0, 0);
+            "选择要共享的媒体文件夹。手机端只会看到显示名称，不会看到电脑里的真实路径。\nChoose folders to share. Phones only see display names, never local paths.",
+            720), 0, 0);
 
         var publicRow = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 2, BackColor = Theme.Surface, Margin = new Padding(0, 14, 0, 8) };
         publicRow.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
@@ -134,7 +135,8 @@ internal sealed class MainForm : Form
 
         layout.Controls.Add(Header(
             "手机访问 / Phone Access",
-            "启动服务后，如果默认地址打不开，请在下面切换到能访问的 IP。\nStart the service. If the default URL fails, choose another IP below."), 0, 0);
+            "启动服务后，如果默认地址打不开，请在下面切换到能访问的 IP。\nStart the service. If the default URL fails, choose another IP below.",
+            400), 0, 0);
 
         var qrFrame = new RoundedPanel
         {
@@ -353,12 +355,12 @@ internal sealed class MainForm : Form
         if (shouldStack)
         {
             _shell.Dock = DockStyle.Top;
-            _shell.Height = 1120;
+            _shell.Height = 1248;
             _shell.ColumnCount = 1;
             _shell.RowCount = 2;
             _shell.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
-            _shell.RowStyles.Add(new RowStyle(SizeType.Absolute, 430));
-            _shell.RowStyles.Add(new RowStyle(SizeType.Absolute, 654));
+            _shell.RowStyles.Add(new RowStyle(SizeType.Absolute, 540));
+            _shell.RowStyles.Add(new RowStyle(SizeType.Absolute, 672));
             _configPanel.Margin = new Padding(0, 0, 0, 16);
             _accessPanel.Margin = new Padding(0);
             _shell.Controls.Add(_configPanel, 0, 0);
@@ -401,7 +403,7 @@ internal sealed class MainForm : Form
         Radius = 12
     };
 
-    private static Control Header(string title, string subtitle)
+    private static Control Header(string title, string subtitle, int maxTextWidth)
     {
         var panel = new FlowLayoutPanel { FlowDirection = FlowDirection.TopDown, AutoSize = true, Dock = DockStyle.Top, BackColor = Theme.Surface };
         panel.Controls.Add(new Label
@@ -409,14 +411,15 @@ internal sealed class MainForm : Form
             Text = title,
             ForeColor = Theme.Text,
             Font = new Font("Microsoft YaHei UI", 20F, FontStyle.Bold),
-            AutoSize = true
+            AutoSize = true,
+            MaximumSize = new Size(maxTextWidth, 0)
         });
         panel.Controls.Add(new Label
         {
             Text = subtitle,
             ForeColor = Theme.Muted,
             AutoSize = true,
-            MaximumSize = new Size(720, 0),
+            MaximumSize = new Size(maxTextWidth, 0),
             Margin = new Padding(0, 8, 0, 0)
         });
         return panel;
