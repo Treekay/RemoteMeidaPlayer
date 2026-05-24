@@ -12,6 +12,7 @@ internal sealed class MainForm : Form
     private readonly ComboBox _accessChoices = new();
     private readonly PictureBox _qrImage = new();
     private readonly RoundedButton _serverButton = new();
+    private readonly Panel _scrollHost = new();
     private TableLayoutPanel? _shell;
     private Control? _configPanel;
     private Control? _accessPanel;
@@ -42,14 +43,17 @@ internal sealed class MainForm : Form
     {
         _shell = new TableLayoutPanel
         {
-            Dock = DockStyle.Fill,
             Padding = new Padding(18),
             ColumnCount = 2,
             BackColor = Theme.Background
         };
+        _scrollHost.Dock = DockStyle.Fill;
+        _scrollHost.AutoScroll = true;
+        _scrollHost.BackColor = Theme.Background;
         _configPanel = BuildConfigPanel();
         _accessPanel = BuildAccessPanel();
-        Controls.Add(_shell);
+        _scrollHost.Controls.Add(_shell);
+        Controls.Add(_scrollHost);
         ApplyResponsiveLayout();
     }
 
@@ -347,11 +351,13 @@ internal sealed class MainForm : Form
 
         if (shouldStack)
         {
+            _shell.Dock = DockStyle.Top;
+            _shell.Height = 1120;
             _shell.ColumnCount = 1;
             _shell.RowCount = 2;
             _shell.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
-            _shell.RowStyles.Add(new RowStyle(SizeType.Percent, 58));
-            _shell.RowStyles.Add(new RowStyle(SizeType.Percent, 42));
+            _shell.RowStyles.Add(new RowStyle(SizeType.Absolute, 430));
+            _shell.RowStyles.Add(new RowStyle(SizeType.Absolute, 654));
             _configPanel.Margin = new Padding(0, 0, 0, 16);
             _accessPanel.Margin = new Padding(0);
             _shell.Controls.Add(_configPanel, 0, 0);
@@ -359,6 +365,7 @@ internal sealed class MainForm : Form
         }
         else
         {
+            _shell.Dock = DockStyle.Fill;
             _shell.ColumnCount = 2;
             _shell.RowCount = 1;
             _shell.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 65));
