@@ -1,0 +1,15 @@
+{
+  "libraries": [
+    {
+      "id": "music",
+      "name": "客厅音乐",
+      "path": "D:\\Music"
+    },
+    {
+      "id": "movies",
+      "name": "电影收藏",
+      "path": "E:\\Videos",
+      "password": "change-this-password"
+    }
+  ]
+}
