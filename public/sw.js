@@ -1,5 +1,20 @@
-const CACHE_NAME = 'remote-media-player-v2';
-const APP_SHELL = ['/', '/index.html', '/styles.css', '/app.js', '/manifest.webmanifest', '/icon.svg'];
+const CACHE_NAME = 'remote-media-player-v3';
+const APP_SHELL = [
+  '/',
+  '/index.html',
+  '/styles.css',
+  '/js/api.js',
+  '/js/app.js',
+  '/js/crypto.js',
+  '/js/dom.js',
+  '/js/icons.js',
+  '/js/player.js',
+  '/js/render.js',
+  '/js/state.js',
+  '/js/utils.js',
+  '/manifest.webmanifest',
+  '/icon.svg'
+];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_SHELL)));

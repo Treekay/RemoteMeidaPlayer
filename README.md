@@ -97,3 +97,15 @@ npm start -- --config ".\media.config.json" --port 5178
 - `POST /api/unlock` 解锁受保护媒体库
 - `GET /api/list?library=<id>&path=<path>` 列出媒体库目录
 - `GET /media/<libraryId>/<path>` 流式播放指定媒体文件
+
+## 项目结构
+
+```text
+server.js                 # 服务端启动入口
+src/server/               # 服务端模块：配置、路由、加密、媒体库、流式播放、静态文件
+public/index.html         # 前端页面外壳
+public/styles.css         # 前端样式
+public/js/                # 前端模块：状态、API、渲染、播放器、密码加密
+public/sw.js              # PWA 静态资源缓存
+media.config.example.json # 多媒体库配置示例
+```
