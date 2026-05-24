@@ -90,6 +90,8 @@ internal sealed class MainForm : Form
         _libraryList.FlowDirection = FlowDirection.TopDown;
         _libraryList.WrapContents = false;
         _libraryList.AutoScroll = true;
+        _libraryList.HorizontalScroll.Enabled = false;
+        _libraryList.HorizontalScroll.Visible = false;
         _libraryList.BackColor = Theme.Surface;
         _libraryList.Resize += (_, _) => ResizeLibraryEditors();
         layout.Controls.Add(_libraryList, 0, 2);
@@ -275,7 +277,9 @@ internal sealed class MainForm : Form
 
     private void ResizeLibraryEditors()
     {
-        var width = Math.Max(540, _libraryList.ClientSize.Width - SystemInformation.VerticalScrollBarWidth - 6);
+        _libraryList.HorizontalScroll.Enabled = false;
+        _libraryList.HorizontalScroll.Visible = false;
+        var width = Math.Max(320, _libraryList.ClientSize.Width - SystemInformation.VerticalScrollBarWidth - 12);
         foreach (Control editor in _libraryList.Controls)
         {
             editor.Width = width;
